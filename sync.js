@@ -6,13 +6,13 @@
 //      (unless the phone has its own unsent change; then the phone wins, except `days`,
 //      which are merged so no pull-up or stretch entry is lost),
 //   2. push: all unsent documents go up together as ONE commit (Git Data API).
-// Repo layout: days/<YYYY-MM-DD>.json, sessions/<id>.json, machines/<id>.json,
+// Repo layout: days/<YYYY-MM-DD>.json, sessions/<id>.json, machines/<id>.json, settings/<name>.json,
 // images/<machine id>.jpg (photos; the phone uploads new ones it took, see getFile/onFile).
 //
 // Works in browsers and in Node 18+ (tests): needs fetch, crypto.subtle, TextEncoder, atob.
 (function (root) {
   'use strict';
-  const PATH_RE = /^(days|sessions|machines)\/([^/]+)\.json$/;
+  const PATH_RE = /^(days|sessions|machines|settings)\/([^/]+)\.json$/;
   const FILE_RE = /^images\/[^/]+\.(jpe?g|png|webp)$/i; // marked with their full path, bytes from o.getFile
   const API = 'https://api.github.com/repos/';
 

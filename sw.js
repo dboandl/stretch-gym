@@ -1,10 +1,10 @@
 // Keeps a copy of the app on the phone so it opens and works without internet.
 // VERSION is set by tools/app-veroeffentlichen.sh on every publish; a new value makes
 // phones download the new files in the background and use them from the next start.
-const VERSION = '2026-11-01.1736';
+const VERSION = '2026-11-01.1854';
 const CACHE = 'sg-' + VERSION;
 const FILES = [
-  './', 'index.html', 'sync.js', 'manifest.webmanifest',
+  './', 'index.html', 'fitinn.js', 'sync.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png',
   'fonts/atkinson-400.woff2', 'fonts/atkinson-700.woff2', 'fonts/barlow-500.woff2', 'fonts/barlow-600.woff2', 'fonts/barlow-700.woff2',
 ];
