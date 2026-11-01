@@ -1,7 +1,7 @@
 // Keeps a copy of the app on the phone so it opens and works without internet.
 // VERSION is set by tools/app-veroeffentlichen.sh on every publish; a new value makes
 // phones download the new files in the background and use them from the next start.
-const VERSION = '2026-11-01.1655';
+const VERSION = '2026-11-01.1736';
 const CACHE = 'sg-' + VERSION;
 const FILES = [
   './', 'index.html', 'sync.js', 'manifest.webmanifest',

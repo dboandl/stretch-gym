@@ -276,6 +276,51 @@ button.stat.on b{color:var(--accent)}
 .rest .txt{flex:1;font-size:14px;line-height:1.3}
 .rest button{border:0;border-radius:10px;min-height:44px;padding:0 12px;font-weight:700;cursor:pointer;background:rgba(127,127,127,.28);color:inherit}
 .rest button.go{background:var(--accent);color:var(--accent-ink)}
+.ss-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start}
+.ss-photos:empty{display:none}
+.pthumb{position:relative;display:block;width:68px;height:90px;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface2);cursor:zoom-in}
+.pthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.pthumb span{position:absolute;right:4px;bottom:4px;min-width:20px;height:20px;border-radius:10px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;padding:0 5px}
+.taken{display:flex;gap:8px;margin-top:10px}
+.taken .btn{flex:1;min-height:48px;padding:8px 10px;font-size:15px}
+.waitbar{display:flex;align-items:center;gap:12px;justify-content:space-between;border:1px solid var(--warn-line);background:var(--warn-soft);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px}
+.waitbar div{display:flex;flex-direction:column;font-size:15px;line-height:1.3}
+.waitbar span{color:var(--muted);font-size:13px}
+.waitbar .btn{flex:none}
+.dlg.pk{width:min(520px,calc(100% - 24px));max-height:calc(100% - 24px)}
+.pk-list h4{margin:10px 0 4px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.pk-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid transparent;border-radius:12px;background:none;padding:6px;cursor:pointer;min-height:56px}
+.pk-row:hover{background:var(--surface2)}
+.pk-row[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.pk-row[hidden],.pk-list h4[hidden]{display:none}
+.pk-img{width:44px;height:44px;border-radius:8px;overflow:hidden;background:var(--surface2);border-left:5px solid var(--gc,var(--c-multi))}
+.pk-img img{width:100%;height:100%;object-fit:cover;display:block}
+.pk-img:has(img){border-left:0}
+.pk-t{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.pk-t b{font-size:15px}
+.pk-t small{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pk-row .kg{color:var(--muted);font-size:13px;white-space:nowrap}
+.pk-cam{position:relative;margin-top:0}
+.pk-cam input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+.pk-cam:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.pk-shot{display:flex;flex-direction:column;gap:8px}
+.pk-shot img{width:100%;max-height:260px;object-fit:contain;border-radius:10px;background:var(--surface2)}
+.pk-fields{display:flex;flex-direction:column;gap:12px}
+.pk-fields[hidden]{display:none}
+.pv{position:fixed;inset:0;z-index:40;background:#000;color:#fff}
+.pv[hidden]{display:none}
+.pv-scroll{position:absolute;inset:0;overflow:auto;display:grid;place-items:center;overscroll-behavior:contain}
+.pv-scroll img{max-width:100%;max-height:100%;display:block;cursor:zoom-in}
+.pv.zoom .pv-scroll{display:block}
+.pv.zoom .pv-scroll img{max-width:none;max-height:none;width:260%;cursor:zoom-out}
+.pv-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 18px max(16px,env(safe-area-inset-left));
+  background:linear-gradient(rgba(0,0,0,.7),transparent);font:700 20px/1.1 var(--display);text-transform:uppercase;letter-spacing:.04em;pointer-events:none}
+.pv-top button,.pv-nav button{pointer-events:auto}
+.pv .icon-btn{background:rgba(0,0,0,.55);border-color:rgba(255,255,255,.3);color:#fff}
+.pv-nav{position:absolute;left:0;right:0;bottom:max(16px,env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:center;gap:18px;font-weight:700;pointer-events:none}
+.pv-nav[hidden]{display:none}
+.pv-nav .icon-btn{font:700 28px/1 var(--body)}
 .ss-fig{background:var(--surface2);--fig-bg:var(--surface2);border-radius:10px;margin-top:12px}
 .ss-fig svg{display:block;width:100%;max-height:200px}
 .bigtime{font:700 72px/1 var(--display);font-variant-numeric:tabular-nums;text-align:center;margin:10px 0 4px}
@@ -376,8 +421,15 @@ button.stat.on b{color:var(--accent)}
   </div>
 </div>
 
+<div id="pv" class="pv" role="dialog" aria-modal="true" aria-label="Machine photo" hidden>
+  <div class="pv-scroll" id="pv-scroll"><img id="pv-img" alt=""></div>
+  <div class="pv-top"><span id="pv-cap"></span><button class="icon-btn" id="pv-x" data-act="pv-close" aria-label="Close photo"></button></div>
+  <div class="pv-nav" id="pv-nav" hidden><button class="icon-btn" data-act="pv-prev" aria-label="Previous photo">‹</button><span id="pv-count"></span><button class="icon-btn" data-act="pv-next" aria-label="Next photo">›</button></div>
+</div>
+
 <div class="toast" id="toast" role="status" hidden></div>
 <dialog class="dlg" id="syncdlg" aria-labelledby="sd-title"></dialog>
+<dialog class="dlg pk" id="pickdlg" aria-labelledby="pk-title"></dialog>
 
 <script src="sync.js"></script>
 <script>
@@ -794,6 +846,7 @@ const ICON = {
   voiceOff: I('<path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-9l-5 4z"/><path d="M3 3l18 18"/>', false),
   check: I('<path d="M5 12.5l4.5 4.5L19 7.5"/>', false),
   ext: I('<path d="M14 5h5v5M19 5l-8 8M17 14v5H5V7h5"/>', false),
+  camera: I('<path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13.5" r="3.5"/>', false),
 };
 
 // ---------- Stretches ----------
@@ -855,7 +908,7 @@ function stepDur(st) {
 // ---------- Machines (FitInn / gym80); de = name on the machine sticker ----------
 const FITINN = 'https://fitinn.at/training/';
 const G = {
-  beine: { name: 'Legs', c: 'var(--c-beine)' }, brust: { name: 'Chest', c: 'var(--c-brust)' },
+  beine: { name: 'Legs', c: 'var(--c-beine)' }, gesaess: { name: 'Glutes', c: 'var(--c-beine)' }, brust: { name: 'Chest', c: 'var(--c-brust)' },
   ruecken: { name: 'Back', c: 'var(--c-ruecken)' }, urue: { name: 'Lower back', c: 'var(--c-bauch)' },
   schulter: { name: 'Shoulders', c: 'var(--c-schulter)' }, arme: { name: 'Arms', c: 'var(--c-schulter)' },
   bauch: { name: 'Abs', c: 'var(--c-bauch)' }, multi: { name: 'Multi', c: 'var(--c-multi)' },
@@ -885,8 +938,37 @@ const M = {
   bau4b: { g: 'bauch', code: 'Abs 4B', name: 'Lying ab machine', de: 'Bauchmuskelmaschine liegend', url: 'bauch4b_bauchmuskelmaschine_liegend', range: [12, 15], cues: ['Fix your feet', 'Head on the pad', 'Round your lower back into the pad'] },
   bau6: { g: 'bauch', code: 'Abs 6', name: 'Torso twist', de: 'Twister', url: 'bauch6_twister', range: [12, 15], cues: ['Lock the pad with your legs', 'Torso upright', 'Elbows on the pad'] },
   mulrow: { g: 'multi', code: 'Multi 1', name: 'Cable row (rope)', de: 'Kabelzugstation', url: 'multi1_kabelzugstation', cues: ['Upright, chest up', 'Elbows close to the body, pull back', 'Squeeze your shoulder blades'] },
-  mulface: { g: 'multi', code: 'Multi 1', name: 'Face pull (rope)', de: 'Kabelzugstation', url: 'multi1_kabelzugstation', range: [12, 15], cues: ['Rope at eye height', 'Pull to your face, elbows high and wide', 'Shoulders back and down'] },
+  mulface: { g: 'multi', code: 'Multi 1', name: 'Face pull (rope)', de: 'Kabelzugstation', url: 'multi1_kabelzugstation', photo: 'mulrow', range: [12, 15], cues: ['Rope at eye height', 'Pull to your face, elbows high and wide', 'Shoulders back and down'] },
   bosu: { g: 'multi', code: 'Bosu', name: 'Bosu squat', q: 'bosu ball squat upside down dumbbell', range: [12, 15], sets: 2, step: 2, start: 10, fig: 'bosusquat', cues: ['Bosu flat side up', 'Dumbbell at your chest, knees track over the toes', 'Lower slowly, rise under control'] },
+  // The other strength machines at the studio (from FitInn's published list), for "I used another machine".
+  // The id is what the QR sticker holds (fitinn.at/qr/<id>). No plan uses them yet.
+  bei4a: { g: 'beine', code: 'Legs 4A', name: 'Seated calf raise', de: 'Wadenmaschine sitzend', url: 'beine4a_wadengeraet', range: [12, 15], cues: [] },
+  bei5a: { g: 'beine', code: 'Legs 5A', name: 'Squat machine', de: 'Kniebeugenmaschine', url: 'beine5a_kniebeugenmaschine', cues: [] },
+  g1: { g: 'gesaess', code: 'Glutes 1A', name: 'Hip abduction', de: 'Abduktionsmaschine', url: 'gesaess1_abduktoren', range: [12, 15], cues: [] },
+  g2: { g: 'gesaess', code: 'Glutes 2', name: 'Hip adduction', de: 'Adduktionsmaschine', url: 'gesaess2_adduktoren', range: [12, 15], cues: [] },
+  g3b: { g: 'gesaess', code: 'Glutes 3B', name: 'Glute kickback', de: 'Gluteus Kick radial', url: 'gesaess3b_glutaeus_radial', cues: [] },
+  bru1b: { g: 'brust', code: 'Chest 1B', name: 'Incline press bench', de: 'Schrägbank', url: 'brust1b_schraegbank', cues: [] },
+  bru1c: { g: 'brust', code: 'Chest 1C', name: 'Decline press bench', de: 'Negativbank', url: 'brust1c_negativbank', cues: [] },
+  bru2a: { g: 'brust', code: 'Chest 2A', name: 'Bench press machine', de: 'Brustpresse', url: 'brust2a_bankdrueckmaschine', cues: [] },
+  bru3a: { g: 'brust', code: 'Chest 3A', name: 'Pec deck (pads)', de: 'Butterfly mit Pads', url: 'brust3a_butterfly', cues: [] },
+  bru4a: { g: 'brust', code: 'Chest 4A', name: 'Incline press machine', de: 'Schrägbank', url: 'brust4a_schraegbankmaschine', cues: [] },
+  bru7a: { g: 'brust', code: 'Chest 7A', name: 'Chest press machine', de: 'Brustpresse', url: 'brust7a_brustpresse', cues: [] },
+  rue2: { g: 'ruecken', code: 'Back 2A', name: 'T-bar row', de: 'Rudermaschine T-Bar', url: 'ruecken2_tbar_rower', cues: [] },
+  urue1: { g: 'urue', code: 'Lower back 1', name: '45° back extension', de: '45 Grad Rückenstrecker', url: 'unterer_ruecken1_ruecken', range: [12, 15], cues: [] },
+  sch1a: { g: 'schulter', code: 'Shoulders 1A', name: 'Shoulder press', de: 'Schulterpresse', url: 'schultern1a_schultermaschine', cues: [] },
+  sch2a: { g: 'schulter', code: 'Shoulders 2A', name: 'Shoulder press machine', de: 'Schulterpresse', url: 'schultern2a_schulterpresse', cues: [] },
+  a2: { g: 'arme', code: 'Arms 2', name: 'Seated preacher curl', de: 'Scott Curl sitzend', url: 'arme2_scott_curler', cues: [] },
+  bau1: { g: 'bauch', code: 'Abs 1', name: 'Ab bench', de: 'Bauchmuskelbank', url: 'bauch1_bauchmuskelbank', range: [12, 15], cues: [] },
+  bau3: { g: 'bauch', code: 'Abs 3', name: 'Leg raise station', de: 'Beinhebegerät', url: 'bauch3_beinhebegeraet', range: [12, 15], cues: [] },
+  bau4c: { g: 'bauch', code: 'Abs 4C', name: 'Ab machine (special)', de: 'Bauchmuskelmaschine spezial', url: 'bauch4c_bauchmuskelmaschine_spezial', range: [12, 15], cues: [] },
+  bau5a: { g: 'bauch', code: 'Abs 5A', name: 'Ab coaster', de: 'Ab Coaster', url: 'bauch5a_abcoaster', range: [12, 15], cues: [] },
+  mul2: { g: 'multi', code: 'Multi 2', name: '4-station cable tower', de: '4-Stationen-Turm', url: 'multi2_4stationen_turm', cues: [] },
+  mul4: { g: 'multi', code: 'Multi 4', name: 'Dual cable station', de: 'Duplexstation', url: 'multi4_doppelstation', cues: [] },
+  mul5: { g: 'multi', code: 'Multi 5', name: 'Squat rack', de: 'Squat Rack', url: 'multi5_kniebeugenstaender', cues: [] },
+  mul6a: { g: 'multi', code: 'Multi 6A', name: 'Smith machine', de: 'Multidrückstation', url: 'multi6a_multidrueckstation', cues: [] },
+  mul6d: { g: 'multi', code: 'Multi 6D', name: 'Max rack', de: 'Max Rack', url: 'multi6d_max_rack', cues: [] },
+  mul7: { g: 'multi', code: 'Multi 7', name: 'Assisted pull-up / dip', de: 'Klimmzug-Barrenmaschine', url: 'multi7_klimmzug_dipmaschine', cues: [] },
+  mul8: { g: 'multi', code: 'Multi 8', name: 'Multi-extension machine', de: 'Innovation Multistreckmaschine', url: 'multi8_steckerschlinge', cues: [] },
   // Home: loose bands (light, medium, strong; no handles, no anchor), floor, ceiling bar with narrow, medium and wide grips.
   // load: 'band' = always a band, 'bwband' = bodyweight, a band makes it harder, 'bw' = bodyweight only. per: reps count per leg/side.
   hsquat: { g: 'beine', code: 'Band', name: 'Band squat', home: true, load: 'band', fig: 'hsquat', q: 'resistance band squat', range: [12, 20], cues: ['Stand on the middle of the band, feet shoulder-width', 'Wrap the ends around your hands, hands at your shoulders', 'Sit back and down, knees over the toes', 'Stand up fully and squeeze your glutes'] },
@@ -932,7 +1014,21 @@ const planName = s => (s.place === 'home' ? 'Home ' : 'Plan ') + s.plan;
 const rangeOf = id => M[id].range || [8, 12];
 const setsOf = id => M[id].sets || 3;
 const stepOf = id => M[id].step || 2.5;
-const vidOf = m => m.url ? { href: FITINN + m.url, label: 'FitInn video' } : { href: yt(m.q), label: 'Find a video' };
+const vidOf = m => m.url ? { href: FITINN + m.url, label: 'FitInn video' } : m.href ? { href: m.href, label: 'FitInn video' } : { href: yt(m.q || m.name), label: 'Find a video' };
+// QR stickers hold fitinn.at/qr/<id>: the id is the machine id above, its letters the muscle group.
+const QR_ALIAS = { mul1: 'mulrow' };
+const QR_G = { bei: ['beine', 'Legs'], g: ['gesaess', 'Glutes'], bru: ['brust', 'Chest'], rue: ['ruecken', 'Back'], urue: ['urue', 'Lower back'],
+  sch: ['schulter', 'Shoulders'], a: ['arme', 'Arms'], bau: ['bauch', 'Abs'], mul: ['multi', 'Multi'] };
+function qrInfo(id) {
+  const m = /^([a-z]+?)(\d+)([a-z]?)$/.exec(id || ''), p = m && QR_G[m[1]];
+  return p ? { g: p[0], code: `${p[1]} ${m[2]}${m[3].toUpperCase()}` } : null;
+}
+// Machines added on the phone (a machines/<id> doc with a name) join the list above.
+function addCustom(id, doc) {
+  if (!doc || !doc.name || (M[id] && !M[id].custom)) return;
+  M[id] = { g: G[doc.g] ? doc.g : 'multi', code: doc.code || 'New', name: doc.name, custom: true, q: doc.name + ' gym machine',
+    ...(doc.qr ? { href: 'https://fitinn.at/qr/' + doc.qr } : {}), cues: [] };
+}
 
 // ---------- Storage: on the phone first, then copied to GitHub (sync.js) ----------
 const COLLS = ['days', 'sessions', 'machines'];
@@ -962,7 +1058,7 @@ function applyDoc(path, doc) {
   Store.raw(path, doc);
   const [coll, id] = path.split('/');
   if (coll === 'days') { if (doc) D.days[id] = { date: id, pullups: [], stretch: [], walk: false, ...doc }; else delete D.days[id]; }
-  else if (coll === 'machines') { if (doc) D.machines[id] = { ...doc, id }; else delete D.machines[id]; }
+  else if (coll === 'machines') { if (doc) { D.machines[id] = { ...doc, id }; addCustom(id, doc); } else delete D.machines[id]; }
   else if (coll === 'sessions') {
     D.sessions = D.sessions.filter(x => x.id !== id);
     if (doc && Array.isArray(doc.sets)) upsertSession({ ...doc, id });
@@ -972,8 +1068,121 @@ const Sync = createSync({
   load: (k, d) => LS.get(k, d), save: (k, v) => LS.set(k, v),
   getDoc: p => Store.get(p), setDoc: applyDoc,
   onChange: () => renderAll(),
-  onState: st => setSync(st),
+  onState: st => { setSync(st); if (!st.running && st.configured && !st.error && !st.offline) Photos.fill(); },
+  onTree: t => Photos.onTree(t),
+  getFile: p => Photos.file(p), onFile: (p, sha) => Photos.uploaded(p, sha),
 });
+
+// ---------- Machine photos ----------
+// Kept in the private repo as images/<machine id>.jpg (or <id>-1.jpg, <id>-2.jpg …), downloaded
+// during sync and stored on the phone (Cache Storage), so they show offline too.
+const PHOTO_RE = /^images\/([a-z0-9]+)(?:-\d+)?\.jpe?g$/i;
+const Photos = {
+  urls: {}, busy: false,
+  key: p => new URL('photo-cache/' + p, location.href).href,
+  of(id) {
+    const k = (M[id] && M[id].photo) || id;
+    return Object.keys(this.urls).filter(p => (p.match(PHOTO_RE) || [])[1] === k).sort().map(p => this.urls[p]);
+  },
+  onTree(entries) {
+    const want = {};
+    for (const e of entries) if (e.type === 'blob' && PHOTO_RE.test(e.path)) want[e.path] = e.sha;
+    LS.set('photos.want', want);
+  },
+  async load() {
+    if (!window.caches) return;
+    try {
+      const c = await caches.open('photos'), have = LS.get('photos.have', {});
+      for (const p of Object.keys(have)) {
+        const r = await c.match(this.key(p));
+        if (r) this.urls[p] = URL.createObjectURL(await r.blob()); else delete have[p];
+      }
+      LS.set('photos.have', have);
+    } catch (e) { console.warn('photos', e); }
+    this.refresh();
+  },
+  // Download photos that are new or changed in the repo; remove the ones deleted there.
+  async fill() {
+    if (this.busy || !window.caches) return;
+    this.busy = true; let changed = false;
+    try {
+      if (LS.get('photos.want', null) == null) { const t = await Sync.tree(); if (!t) return; this.onTree(t); }
+      const want = LS.get('photos.want', {}), have = LS.get('photos.have', {}), c = await caches.open('photos');
+      for (const [p, sha] of Object.entries(want)) {
+        if (have[p] === sha) continue;
+        const buf = await Sync.blob(sha), type = 'image/jpeg';
+        await c.put(this.key(p), new Response(buf, { headers: { 'Content-Type': type } }));
+        have[p] = sha; LS.set('photos.have', have);
+        if (this.urls[p]) URL.revokeObjectURL(this.urls[p]);
+        this.urls[p] = URL.createObjectURL(new Blob([buf], { type })); changed = true;
+      }
+      for (const p of Object.keys(have)) {
+        if (p in want || have[p] === 'local') continue; // 'local': taken on this phone, not uploaded yet
+        await c.delete(this.key(p)); delete have[p];
+        if (this.urls[p]) { URL.revokeObjectURL(this.urls[p]); delete this.urls[p]; }
+        changed = true;
+      }
+      LS.set('photos.have', have);
+    } catch (e) { console.warn('photos', e); }
+    finally { this.busy = false; if (changed) this.refresh(); }
+  },
+  // A photo taken on this phone: shown right away, uploaded with the next sync.
+  async addLocal(id, blob) {
+    const have = LS.get('photos.have', {}), want = LS.get('photos.want', null) || {};
+    let p = `images/${id}.jpg`;
+    for (let n = 2; have[p] || this.urls[p] || want[p]; n++) p = `images/${id}-${n}.jpg`; // never replace a photo in the repo
+    try { await (await caches.open('photos')).put(this.key(p), new Response(blob, { headers: { 'Content-Type': 'image/jpeg' } })); }
+    catch (e) { console.warn('photos', e); toast('Could not keep the photo on this phone.'); return; }
+    have[p] = 'local'; LS.set('photos.have', have);
+    this.urls[p] = URL.createObjectURL(blob);
+    Sync.mark(p); this.refresh();
+  },
+  async file(p) {
+    try { const r = await (await caches.open('photos')).match(this.key(p)); return r ? new Uint8Array(await r.arrayBuffer()) : null; }
+    catch (e) { console.warn('photos', e); return null; }
+  },
+  uploaded(p, sha) {
+    const have = LS.get('photos.have', {}), want = LS.get('photos.want', null);
+    have[p] = sha; LS.set('photos.have', have);
+    if (want) { want[p] = sha; LS.set('photos.want', want); }
+  },
+  thumbs(id) {
+    const list = this.of(id); if (!list.length) return '';
+    return `<button class="pthumb" data-photo="${id}" aria-label="Show the photo of ${h(M[id].name)} fullscreen"><img src="${list[0]}" alt="">${list.length > 1 ? `<span>${list.length}</span>` : ''}</button>`;
+  },
+  // Update the open set screen in place (no full re-render, so typing isn't interrupted).
+  refresh() { const el = $('#ss-photos'); if (el) el.innerHTML = this.thumbs(el.dataset.ex); },
+};
+
+// Fullscreen photo: tap to zoom in at that spot, tap again to zoom out; X or the back button closes.
+const PV = {
+  id: null, i: 0, list: [],
+  open(id) {
+    this.list = Photos.of(id); if (!this.list.length) return;
+    this.id = id; this.i = 0; this.show();
+    $('#pv').hidden = false; history.pushState({ pv: 1 }, '');
+  },
+  show() {
+    const m = M[this.id], img = $('#pv-img');
+    $('#pv').classList.remove('zoom');
+    img.src = this.list[this.i]; img.alt = 'Photo: ' + m.name;
+    $('#pv-cap').textContent = `${m.code} · ${m.name}`;
+    $('#pv-nav').hidden = this.list.length < 2;
+    $('#pv-count').textContent = `${this.i + 1} / ${this.list.length}`;
+  },
+  step(d) { this.i = (this.i + d + this.list.length) % this.list.length; this.show(); },
+  zoom(e) {
+    const pv = $('#pv'), sc = $('#pv-scroll'), img = $('#pv-img');
+    if (pv.classList.contains('zoom')) { pv.classList.remove('zoom'); return; }
+    const fx = e.offsetX / img.clientWidth, fy = e.offsetY / img.clientHeight;
+    pv.classList.add('zoom');
+    sc.scrollLeft = fx * img.clientWidth - sc.clientWidth / 2;
+    sc.scrollTop = fy * img.clientHeight - sc.clientHeight / 2;
+  },
+  close() { if (history.state && history.state.pv) history.back(); else this.hide(); },
+  hide() { $('#pv').hidden = true; this.id = null; },
+};
+window.addEventListener('popstate', () => { if (!$('#pv').hidden) PV.hide(); });
 
 // In-memory data
 const D = { sessions: [], machines: {}, days: {} };
@@ -981,6 +1190,7 @@ function loadAll() {
   const ses = Store.list('sessions'), mac = Store.list('machines'), days = Store.list('days');
   D.sessions = ses.filter(s => Array.isArray(s.sets)).sort((a, b) => String(b.startedAt).localeCompare(String(a.startedAt)));
   D.machines = Object.fromEntries(mac.map(m => [m.id, m]));
+  for (const m of mac) addCustom(m.id, m);
   D.days = Object.fromEntries(days.map(d => [d.id, { date: d.id, pullups: [], stretch: [], walk: false, ...d }]));
 }
 function dayDoc(k = TODAY()) { return D.days[k] || (D.days[k] = { date: k, pullups: [], stretch: [], walk: false }); }
@@ -1468,17 +1678,22 @@ function buildSched(home) {
   return st;
 }
 const SCHED = buildSched(false), SCHED_HOME = buildSched(true);
+// Each workout keeps its own copy (S.q), so a machine that's taken can move to later.
 const warmMs = pl => pl === 'home' ? 300000 : 600000;
 const SS = {
   S: null, active: false, timer: 0, raf: 0, draft: null, lastRest: null,
-  get sched() { return this.S && this.S.place === 'home' ? SCHED_HOME : SCHED; },
+  get sched() { return this.S.q || (this.S.place === 'home' ? SCHED_HOME : SCHED); },
   start(pl, plan) {
     const date = TODAY();
     this.S = { id: `${date}-${pl === 'home' ? 'home' : ''}${plan}-${Math.random().toString(36).slice(2, 7)}`, date, plan, place: pl, startedAt: new Date().toISOString(), endedAt: null,
-      sets: [], subs: {}, test: pl !== 'home' && gymLogged().length < 3, step: 0, skipExtra: false, restUntil: 0, restTotal: 0, warmEnd: 0, warmLeft: warmMs(pl), cooled: false };
+      sets: [], subs: {}, q: clone(pl === 'home' ? SCHED_HOME : SCHED), test: pl !== 'home' && gymLogged().length < 3, step: 0, skipExtra: false, restUntil: 0, restTotal: 0, warmEnd: 0, warmLeft: warmMs(pl), cooled: false };
     this.saveLocal(); this.open();
   },
-  resume() { const c = LS.get('cur', null); if (!c) return renderGym(); this.S = c; this.open(); },
+  resume() {
+    const c = LS.get('cur', null); if (!c) return renderGym();
+    if (!c.q) c.q = clone(c.place === 'home' ? SCHED_HOME : SCHED); // started before workouts kept their own order
+    this.S = c; this.open();
+  },
   open() {
     this.active = true; this.draft = null;
     $('#ss-x').innerHTML = ICON.close;
@@ -1631,16 +1846,21 @@ const SS = {
             <button data-act="kg+" aria-label="More weight">+</button></div>`
       : m.load === 'bw' ? ''
       : `<div class="bands"><span class="lbl" id="band-lbl">Band</span><div class="alts" role="group" aria-labelledby="band-lbl">${bandKeys.map(k => `<button class="alt" data-band="${k}" aria-pressed="${(this.draft.band || '0') === k}">${k === '0' ? 'No band' : BANDS[k]}</button>`).join('')}</div></div>`;
-    const partner = st.pair[0] === 'p' || st.pair === 'x' ? this.exFor(st.slot.slice(0, -1) + (st.slot.endsWith('0') ? '1' : '0')) : null;
-    const label = st.pair === 'f' ? 'Finisher · balance' : st.pair === 'x' ? 'Extra' : `Superset ${st.pi + 1} of 3`;
-    const v = vidOf(m), setting = D.machines[exId]?.setting || '';
-    return `${this.restBanner(m.name)}
-      <div class="pairlabel">${label}${partner ? ` · alternating with ${h(M[partner].name)}` : ''}</div>
+    // Alternating only while the partner's sets are right next to this one (not after "do it later").
+    const pslot = st.pair[0] === 'p' || st.pair === 'x' ? st.slot.slice(0, -1) + (st.slot.endsWith('0') ? '1' : '0') : null;
+    const near = pslot && [this.sched[S.step - 1], this.sched[S.step + 1]].some(x => x && x.t === 'set' && x.slot === pslot);
+    const partner = near ? this.exFor(pslot) : null;
+    const label = (st.later ? 'Moved to later · ' : '') + (st.pair === 'f' ? 'Finisher · balance' : st.pair === 'x' ? 'Extra' : `Superset ${st.pi + 1} of 3`);
+    const v = vidOf(m), setting = D.machines[exId]?.setting || '', canLater = !!this.laterPlan();
+    return `${this.restBanner(m.name)}${this.waiting()}
+      <div class="pairlabel">${label}${partner ? ` · alternating with ${h(M[partner].name)}` : ''}${exId !== def ? ` · instead of ${h(M[def].name)}` : ''}</div>
       <article class="sticker" style="--gc:${g.c}">
         <div class="band"><span>${h(m.code)}</span><small>${h(g.name)}</small></div>
         <div class="body">
-          <h2>${h(m.name)}</h2>
-          <div class="meta">Set ${st.set} of ${of} · target ${r[0]}–${r[1]} reps${m.per ? ' per ' + m.per : ''}${m.de ? ` · on the machine: ${h(m.de)}` : ''}</div>
+          <div class="ss-head"><div>
+            <h2>${h(m.name)}</h2>
+            <div class="meta">Set ${st.set} of ${of} · target ${r[0]}–${r[1]} reps${m.per ? ' per ' + m.per : ''}${m.de ? ` · on the machine: ${h(m.de)}` : ''}</div>
+          </div><div class="ss-photos" id="ss-photos" data-ex="${exId}">${Photos.thumbs(exId)}</div></div>
           ${m.fig ? `<div class="ss-fig"><svg class="fig" id="ss-anim" data-fig="${m.fig}" viewBox="0 -14 240 204" aria-hidden="true"></svg></div>` : ''}
           ${sg.last ? `<div class="last"><span class="muted">Last time (${ago(sg.last.date)}):</span> <b>${setsText(sg.last.sets)}</b></div>` : ''}
           ${sg.hint ? `<div class="hint ${sg.tone}">${h(sg.hint)}</div>` : ''}
@@ -1652,9 +1872,11 @@ const SS = {
             <button data-act="reps+" aria-label="More reps">+</button></div>
           <button class="btn primary big" data-act="save-set">${ICON.check} Save set</button>
           ${today.length ? `<div class="done-sets">${today.map((x, i) => `<span>Set ${i + 1}: ${x.kg != null ? num(x.kg) + ' kg' : x.band ? BANDS[x.band] : 'BW'} × ${x.reps}</span>`).join('')}</div>` : ''}
-          <div class="sec"><h4>Technique</h4><ul class="cues">${m.cues.map(c => `<li>${h(c)}</li>`).join('')}</ul></div>
+          ${m.home ? (canLater ? '<div class="taken"><button class="btn" data-act="ss-later">Do it later</button></div>' : '')
+            : `<div class="taken">${canLater ? '<button class="btn" data-act="ss-later">Taken? Do it later</button>' : ''}<button class="btn" data-act="ss-pick">I used another machine</button></div>`}
+          ${m.cues.length ? `<div class="sec"><h4>Technique</h4><ul class="cues">${m.cues.map(c => `<li>${h(c)}</li>`).join('')}</ul></div>` : ''}
           ${m.home ? '' : `<div class="sec"><h4>My settings</h4><input class="field" id="in-setting" data-ex="${exId}" value="${h(setting)}" placeholder="e.g. seat 4, pad 2" autocomplete="off"></div>`}
-          ${alts.length > 1 ? `<div class="sec"><h4>${m.home ? 'Swap for' : 'Alternatives if it’s taken'}</h4><div class="alts">${alts.map(a => `<button class="alt" data-alt="${a}" aria-pressed="${a === exId}">${h(M[a].name)}</button>`).join('')}</div></div>` : ''}
+          ${m.home && alts.length > 1 ? `<div class="sec"><h4>Swap for</h4><div class="alts">${alts.map(a => `<button class="alt" data-alt="${a}" aria-pressed="${a === exId}">${h(M[a].name)}</button>`).join('')}</div></div>` : ''}
           <div class="sec links"><a href="${v.href}" target="_blank" rel="noopener">${ICON.ext} ${v.label}</a>
             <button class="linkbtn" data-act="skip-set">Skip set</button>
             ${S.sets.length ? '<button class="linkbtn" data-act="undo-set">Delete last set</button>' : ''}</div>
@@ -1663,7 +1885,7 @@ const SS = {
   },
   vExtra() {
     const pl = this.S.place, ex = extrasOf(pl);
-    return `<section class="card">
+    return `${this.waiting()}<section class="card">
       <div class="eyebrow">Extra, if there’s time</div><h2 class="h2">Arms</h2>
       <div class="sub">${h(M[ex[0]].name)} ↔ ${h(M[ex[1]].name)}, 3 sets each, alternating. About 8 min.</div>
       <ol class="pairs"><li class="pair"><span class="num">+</span><div>${ex.map(id => mrow(id)).join('')}</div></li></ol>
@@ -1672,7 +1894,7 @@ const SS = {
     </section>`;
   },
   vCool() {
-    return `<section class="card">
+    return `${this.waiting()}<section class="card">
       <div class="eyebrow">To finish</div><h2 class="h2">Cool-down</h2>
       <div class="sub">${fmtMin(seqSeconds('cooloff'))} · legs, lats, chest, hips</div>
       <div class="thumbs">${[...new Set(SEQ.cooloff.steps.map(s => s.ex))].map(x => `<div class="thumb">${figSVG(figOf(x), 1, false)}</div>`).join('')}</div>
@@ -1715,7 +1937,7 @@ const SS = {
     S.sets.push({ ex: exId, ...load, reps: d.reps, at: new Date().toISOString(), slot: st.slot, set: st.set });
     this.saveRemote();
     const j = this.nextIdx(S.step), nx = this.sched[j];
-    const rest = nx && nx.t === 'set' ? (nx.pair === st.pair ? 45 : 75) : 0;
+    const rest = nx && nx.t === 'set' ? (nx.pair === st.pair && (nx.slot !== st.slot || st.pair === 'f') ? 45 : 75) : 0;
     this.go(j, rest);
   },
   undoSet() {
@@ -1730,6 +1952,51 @@ const SS = {
     const S = this.S, st = this.sched[S.step], def = slotDefault(S, st.slot);
     if (id === def) delete S.subs[st.slot]; else S.subs[st.slot] = id;
     this.draft = null; this.saveLocal(); this.render();
+  },
+  // "Taken – do it later": this machine's remaining sets move behind the other work, i.e. before
+  // the arms extra while still in the main part, otherwise before the cool-down. null = nothing else left.
+  laterPlan() {
+    const S = this.S, st = this.sched[S.step];
+    if (!st || st.t !== 'set') return null;
+    const move = [], keep = [];
+    this.sched.forEach((x, i) => (i >= S.step && x.t === 'set' && x.slot === st.slot ? move : keep).push(x));
+    const find = t => keep.findIndex((x, i) => i >= S.step && x.t === t);
+    let at = find('extra');
+    if (at <= S.step) at = find('cool');
+    if (at <= S.step) return null;
+    keep.splice(at, 0, ...move.map(x => ({ ...x, later: true })));
+    return { q: keep, n: move.length, ex: this.exFor(st.slot) };
+  },
+  later() {
+    const p = this.laterPlan(); if (!p) return;
+    this.S.q = p.q;
+    toast(`${M[p.ex].name}: ${plural(p.n, 'set', 'sets')} moved to later.`);
+    this.go(this.S.step, this.restLeft());
+  },
+  // The machine is free now: its postponed sets come next.
+  now(slot) {
+    const S = this.S, move = [], keep = [];
+    this.sched.forEach((x, i) => (i >= S.step && x.later && x.slot === slot ? move : keep).push(x));
+    if (!move.length) return;
+    keep.splice(S.step, 0, ...move);
+    S.q = keep;
+    this.go(S.step, this.restLeft());
+  },
+  // Keep a running rest after reordering; the same machine twice in a row gets at least 75 s.
+  restLeft() {
+    const S = this.S, st = this.sched[S.step], last = S.sets[S.sets.length - 1];
+    let until = S.restUntil > Date.now() ? S.restUntil : 0;
+    if (last && st && st.t === 'set' && st.slot === last.slot && st.pair !== 'f') until = Math.max(until, Date.parse(last.at) + 75000);
+    return Math.max(0, (until - Date.now()) / 1000);
+  },
+  // Banner for a postponed machine that's still to come (not the one on screen).
+  waiting() {
+    const S = this.S, st = this.sched[S.step];
+    const w = this.sched.find((x, i) => i > S.step && x.later && !(st.t === 'set' && x.slot === st.slot));
+    if (!w) return '';
+    const n = this.sched.filter((x, i) => i > S.step && x.later && x.slot === w.slot).length;
+    return `<div class="waitbar"><div><b>Later: ${h(M[this.exFor(w.slot)].name)}</b><span>${plural(n, 'set', 'sets')} left · free now?</span></div>
+      <button class="btn" data-now="${w.slot}">Do it now</button></div>`;
   },
   afterCool(done) { if (done) { this.S.cooled = true; this.go(this.sched.length - 1, 0); } },
   finishNow() {
@@ -1748,6 +2015,137 @@ function closeOpenSession() {
   LS.set('cur', null);
 }
 
+// ---------- "I used another machine": pick from the list, or add a new one with a photo ----------
+async function readQR(img) {
+  if (!('BarcodeDetector' in window)) return { unsupported: true };
+  try {
+    const codes = await new BarcodeDetector({ formats: ['qr_code'] }).detect(img);
+    for (const c of codes) { const m = /fitinn\.at\/qr\/([a-z0-9]+)/i.exec(c.rawValue || ''); if (m) return { id: m[1].toLowerCase() }; }
+    return { other: codes.length > 0 };
+  } catch (e) { console.warn('qr', e); return {}; }
+}
+// Phone photos are 3–12 MB; the repo keeps them at about the size of the existing ones (1200 px).
+function shrink(img, max = 1200) {
+  const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+  c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return new Promise(r => c.toBlob(b => r({ blob: b, canvas: c }), 'image/jpeg', 0.8));
+}
+const PK = {
+  slot: null, photo: null, url: null, qr: null, known: null, g: null,
+  open() {
+    const st = SS.sched[SS.S.step]; if (!st || st.t !== 'set') return;
+    this.slot = st.slot; this.reset(); this.list();
+    $('#pickdlg').showModal();
+  },
+  close() { const d = $('#pickdlg'); if (d.open) d.close(); },
+  reset() { if (this.url) URL.revokeObjectURL(this.url); this.url = this.photo = this.qr = this.known = this.g = null; },
+  row(id, cur) {
+    const m = M[id], ph = Photos.of(id)[0], l = lastFor(id);
+    const last = id === cur ? 'now' : l && l.sets.some(x => x.kg != null) ? kgFmt(Math.max(...l.sets.map(x => x.kg ?? 0))) : '';
+    return `<button class="pk-row" data-pick="${id}" aria-pressed="${id === cur}" data-s="${h([id, m.code, m.name, m.de || ''].join(' ').toLowerCase())}">
+      <span class="pk-img" style="--gc:${G[m.g].c}">${ph ? `<img src="${ph}" alt="">` : ''}</span>
+      <span class="pk-t"><b>${h(m.name)}</b><small>${h(m.code)}${m.de ? ' · ' + h(m.de) : ''}</small></span><span class="kg">${last}</span></button>`;
+  },
+  list() {
+    const S = SS.S, cur = SS.exFor(this.slot), def = slotDefault(S, this.slot);
+    const top = [def, ...(ALT[def] || [])].filter(id => M[id] && !M[id].home);
+    const ids = Object.keys(M).filter(id => !M[id].home && !top.includes(id));
+    const byCode = (a, b) => M[a].code.localeCompare(M[b].code, 'en', { numeric: true }) || M[a].name.localeCompare(M[b].name);
+    const groups = Object.keys(G).map(g => [g, ids.filter(id => M[id].g === g).sort(byCode)]).filter(([, l]) => l.length);
+    $('#pickdlg').innerHTML = `<div class="dlg-in">
+      <div class="row between"><h2 class="h3" id="pk-title">Which machine?</h2><button class="icon-btn" data-act="pk-close" aria-label="Close">${ICON.close}</button></div>
+      <p class="sub">Planned: ${h(M[def].name)}. The sets you log now go to the machine you pick.</p>
+      <input class="field" type="search" id="pk-q" placeholder="Search name or number" autocomplete="off" aria-label="Search machines">
+      <div class="pk-list" id="pk-list">
+        <h4>Planned and good swaps</h4>${top.map(id => this.row(id, cur)).join('')}
+        ${groups.map(([g, l]) => `<h4>${G[g].name}</h4>${l.map(id => this.row(id, cur)).join('')}`).join('')}
+        <p class="sub" id="pk-none" hidden>No machine matches. Add it with a photo below.</p>
+      </div>
+      <button class="btn block" data-act="pk-new">${ICON.camera} Not in the list? Add it with a photo</button>
+    </div>`;
+  },
+  filter(q) {
+    q = q.trim().toLowerCase(); let any = false;
+    document.querySelectorAll('#pk-list .pk-row').forEach(r => { r.hidden = !!q && !r.dataset.s.includes(q); any = any || !r.hidden; });
+    document.querySelectorAll('#pk-list h4').forEach(t => {
+      let n = t.nextElementSibling, on = false;
+      for (; n && n.tagName !== 'H4'; n = n.nextElementSibling) if (n.classList.contains('pk-row') && !n.hidden) on = true;
+      t.hidden = !on;
+    });
+    $('#pk-none').hidden = any;
+  },
+  pick(id) { this.close(); this.reset(); SS.sub(id); },
+  form() {
+    this.reset();
+    $('#pickdlg').innerHTML = `<div class="dlg-in">
+      <div class="row between"><button class="linkbtn" data-act="pk-back">‹ Back to the list</button><button class="icon-btn" data-act="pk-close" aria-label="Close">${ICON.close}</button></div>
+      <h2 class="h3" id="pk-title">New machine</h2>
+      <p class="sub">Take a photo with the sticker in view, so its name and QR code are on it. The machine is then added to this workout.</p>
+      <label class="btn primary big pk-cam">${ICON.camera}<span id="pk-cam-lbl">Take a photo</span><input id="pk-cam" type="file" accept="image/*" capture="environment"></label>
+      <div class="pk-shot" id="pk-shot" hidden><img id="pk-img" alt="Your photo of the machine"><div class="st-line" id="pk-qr" role="status"></div></div>
+      <div class="pk-fields" id="pk-fields">
+        <label class="fld">Name on the sticker<input id="pk-name" autocomplete="off" placeholder="e.g. Wadenmaschine"></label>
+        <label class="fld">Number on the sticker (optional)<input id="pk-code" autocomplete="off" placeholder="e.g. Legs 4A"></label>
+        <div class="fld"><span id="pk-g-lbl">Muscle group</span><div class="alts" role="group" aria-labelledby="pk-g-lbl">${Object.keys(G).map(g => `<button type="button" class="alt" data-pkg="${g}" aria-pressed="false">${G[g].name}</button>`).join('')}</div></div>
+      </div>
+      <button class="btn primary big" data-act="pk-add" id="pk-add">Add to this workout</button>
+    </div>`;
+  },
+  setG(g) { this.g = g; document.querySelectorAll('[data-pkg]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pkg === g))); },
+  async onPhoto(file) {
+    if (!file) return;
+    const line = $('#pk-qr'), say = (cls, html) => { line.className = 'st-line ' + cls; line.innerHTML = `<span>${html}</span>`; };
+    $('#pk-shot').hidden = false; say('busy', 'Reading the QR code…');
+    let img;
+    try { img = await createImageBitmap(file); } catch (e) { return say('err', 'Could not open this photo. Please try again.'); }
+    const small = await shrink(img);
+    let qr = await readQR(img);
+    if (!qr.id && !qr.unsupported) { const again = await readQR(small.canvas); if (again.id) qr = again; }
+    try { img.close(); } catch {}
+    if (this.url) URL.revokeObjectURL(this.url);
+    this.photo = small.blob; this.url = URL.createObjectURL(small.blob); $('#pk-img').src = this.url;
+    $('#pk-cam-lbl').textContent = 'Take another photo';
+    this.qr = qr.id || null;
+    const id = qr.id && (QR_ALIAS[qr.id] || qr.id), info = qrInfo(qr.id);
+    this.known = id && M[id] && !M[id].home ? id : null;
+    $('#pk-fields').hidden = !!this.known;
+    if (this.known) {
+      say('ok', `QR code: <b>${h(M[id].code)} · ${h(M[id].name)}</b>. It’s already in the list.`);
+      $('#pk-add').textContent = 'Use ' + M[id].name;
+      return;
+    }
+    $('#pk-add').textContent = 'Add to this workout';
+    if (info) {
+      say('ok', `QR code read: <b>${h(info.code)}</b>. Now type the name from the sticker.`);
+      if (!$('#pk-code').value) $('#pk-code').value = info.code;
+      if (!this.g) this.setG(info.g);
+    } else say('wait', qr.unsupported ? 'This phone can’t read QR codes here. Type the name and pick the muscle group.'
+      : 'No machine QR code found on the photo. Type the name and pick the muscle group.');
+  },
+  async add() {
+    const btn = $('#pk-add'); if (btn.disabled) return;
+    if (this.known) {
+      const id = this.known;
+      btn.disabled = true;
+      // Keep the photo only if the machine has none yet, and we know the repo's list (so nothing gets replaced).
+      if (this.photo && !Photos.of(id).length && LS.get('photos.want', null)) await Photos.addLocal(id, this.photo);
+      return this.pick(id);
+    }
+    const name = $('#pk-name').value.trim(), code = $('#pk-code').value.trim();
+    if (!name) { toast('Please type the name from the sticker.'); return $('#pk-name').focus(); }
+    if (!this.g) return toast('Please pick the muscle group.');
+    btn.disabled = true;
+    const id = this.qr && !M[this.qr] && !QR_ALIAS[this.qr] ? this.qr : 'n' + Date.now().toString(36);
+    const now = new Date().toISOString();
+    const doc = { ...(D.machines[id] || {}), name, code: code || 'New', g: this.g, ...(this.qr ? { qr: this.qr } : {}), addedAt: now, updatedAt: now };
+    D.machines[id] = { ...doc, id }; Store.put('machines/' + id, doc); addCustom(id, doc);
+    if (this.photo) await Photos.addLocal(id, this.photo);
+    toast(name + ' added to the list.');
+    this.pick(id);
+  },
+};
+
 // ---------- Events ----------
 const ACT = {
   'pl-close': () => PL.close(), 'pl-play': () => PL.toggle(), 'pl-toggle': () => PL.toggle(),
@@ -1765,12 +2163,15 @@ const ACT = {
   'reps-': () => SS.bump('reps', -1), 'reps+': () => SS.bump('reps', 1),
   'save-set': () => SS.saveSet(), 'undo-set': () => SS.undoSet(),
   'skip-set': () => SS.go(SS.nextIdx(SS.S.step), 0),
+  'ss-later': () => SS.later(), 'ss-pick': () => PK.open(),
+  'pk-close': () => PK.close(), 'pk-new': () => PK.form(), 'pk-back': () => { PK.reset(); PK.list(); }, 'pk-add': () => PK.add(),
   'rest-plus': () => { SS.S.restUntil += 15000; SS.saveLocal(); SS.tick(); },
   'rest-skip': () => { SS.S.restUntil = 0; SS.saveLocal(); const r = $('#rest'); if (r) r.remove(); },
   'extra-yes': () => { SS.S.skipExtra = false; SS.go(SS.S.step + 1, 0); },
   'extra-no': () => { SS.S.skipExtra = true; SS.go(SS.nextIdx(SS.S.step), 0); },
   'cool-start': () => { PL.open('cooloff', 'gym'); PL.start(); },
   'cool-skip': () => SS.go(SS.S.step + 1, 0),
+  'pv-close': () => PV.close(), 'pv-prev': () => PV.step(-1), 'pv-next': () => PV.step(1),
   'sync-open': () => openSyncDlg(),
   'sync-save': () => saveSyncCfg(),
   'sync-now': () => Sync.run(),
@@ -1783,24 +2184,31 @@ const ACT = {
   },
 };
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-act],[data-play],[data-variant],[data-pull],[data-tab],[data-plan],[data-alt],[data-place],[data-band]');
+  if (e.target.id === 'pv-img') return PV.zoom(e);
+  const t = e.target.closest('[data-act],[data-play],[data-variant],[data-pull],[data-tab],[data-plan],[data-alt],[data-place],[data-band],[data-photo],[data-pick],[data-pkg],[data-now]');
   if (!t || t.disabled) return;
   const d = t.dataset;
   if (d.tab) return setTab(d.tab);
   if (d.place) { setPlace(d.place); return renderGym(); }
   if (d.band) return SS.setBand(d.band === '0' ? null : d.band);
+  if (d.photo) return PV.open(d.photo);
   if (d.play) { PL.open(d.play); PL.start(); return; }
   if (d.variant) { LS.set('morgenOverride', { date: TODAY(), v: d.variant }); return renderDehnen(); }
   if (d.pull) return pull(d.pull);
   if (d.plan) { gymSel = d.plan; return renderGym(); }
   if (d.alt) return SS.sub(d.alt);
+  if (d.pick) return PK.pick(d.pick);
+  if (d.pkg) return PK.setG(d.pkg);
+  if (d.now) return SS.now(d.now);
   if (ACT[d.act]) ACT[d.act](t, e);
 });
 document.addEventListener('input', e => {
+  if (e.target.id === 'pk-q') return PK.filter(e.target.value);
   if (!SS.draft) return;
   if (e.target.id === 'in-kg' || e.target.id === 'in-reps') { const d = SS.readDraft(); SS.draft.kg = d.kg ?? ''; SS.draft.reps = d.reps ?? ''; }
 });
 document.addEventListener('change', e => {
+  if (e.target.id === 'pk-cam') { PK.onPhoto(e.target.files && e.target.files[0]); e.target.value = ''; return; }
   if (e.target.id !== 'in-setting') return;
   const id = e.target.dataset.ex, v = e.target.value.trim();
   if ((D.machines[id]?.setting || '') === v) return;
@@ -1809,6 +2217,7 @@ document.addEventListener('change', e => {
   toast('Setting saved.');
 });
 document.addEventListener('keydown', e => {
+  if (!$('#pv').hidden) { if (e.key === 'Escape') PV.close(); else if (e.key === 'ArrowRight') PV.step(1); else if (e.key === 'ArrowLeft') PV.step(-1); return; }
   if (!PL.active || e.target.closest('input')) return;
   if (e.key === ' ') { e.preventDefault(); PL.toggle(); }
   else if (e.key === 'ArrowRight') PL.next();
@@ -1822,6 +2231,8 @@ function boot() {
   $('#today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   pickVoice(); try { speechSynthesis.onvoiceschanged = pickVoice; } catch {}
   setTab(tab); setSync();
+  $('#pv-x').innerHTML = ICON.close;
+  Photos.load();
   try { loadAll(); } catch (e) { console.warn(e); toast('Could not read saved data.'); }
   renderAll(); route();
   // Sync when the app opens, comes back to the front, gets internet, or is left with unsent changes.

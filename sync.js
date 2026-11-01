@@ -6,12 +6,14 @@
 //      (unless the phone has its own unsent change; then the phone wins, except `days`,
 //      which are merged so no pull-up or stretch entry is lost),
 //   2. push: all unsent documents go up together as ONE commit (Git Data API).
-// Repo layout: days/<YYYY-MM-DD>.json, sessions/<id>.json, machines/<id>.json.
+// Repo layout: days/<YYYY-MM-DD>.json, sessions/<id>.json, machines/<id>.json,
+// images/<machine id>.jpg (photos; the phone uploads new ones it took, see getFile/onFile).
 //
 // Works in browsers and in Node 18+ (tests): needs fetch, crypto.subtle, TextEncoder, atob.
 (function (root) {
   'use strict';
   const PATH_RE = /^(days|sessions|machines)\/([^/]+)\.json$/;
+  const FILE_RE = /^images\/[^/]+\.(jpe?g|png|webp)$/i; // marked with their full path, bytes from o.getFile
   const API = 'https://api.github.com/repos/';
 
   const enc = new TextEncoder();
@@ -23,6 +25,12 @@
     const all = new Uint8Array(head.length + body.length); all.set(head); all.set(body, head.length);
     const h = new Uint8Array(await crypto.subtle.digest('SHA-1', all));
     return Array.from(h, b => b.toString(16).padStart(2, '0')).join('');
+  }
+  function toB64(buf) {
+    const u = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+    let s = '';
+    for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+    return btoa(s);
   }
   function b64Text(b64) {
     const bin = atob(String(b64).replace(/\s/g, ''));
@@ -63,7 +71,10 @@
   }
 
   function createSync(o) {
-    // o: { load(key, def), save(key, val), getDoc(path), setDoc(path, doc|null), onChange(paths), onState(status), fetch?, isOnline?, debounce? }
+    // o: { load(key, def), save(key, val), getDoc(path), setDoc(path, doc|null), onChange(paths), onState(status),
+    //      onTree?(entries) – every file in the repo, after each pull (used for the machine photos),
+    //      getFile?(path) – bytes of a marked images/… file, onFile?(path, sha) – it is in the repo now,
+    //      fetch?, isOnline?, debounce? }
     const fetchFn = o.fetch || ((...a) => fetch(...a));
     const isOnline = o.isOnline || (() => typeof navigator === 'undefined' || navigator.onLine !== false);
     const debounce = o.debounce ?? 20000;
@@ -81,10 +92,10 @@
     });
     const emit = () => { try { o.onState && o.onState(status()); } catch (e) { console.warn(e); } };
 
-    async function api(method, path, body) {
+    async function api(method, path, body, raw) {
       const r = await fetchFn(API + cfg.repo + '/' + path, {
-        method, cache: 'no-store',
-        headers: { Authorization: 'Bearer ' + cfg.token, Accept: 'application/vnd.github+json', ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        method, cache: raw ? 'default' : 'no-store',
+        headers: { Authorization: 'Bearer ' + cfg.token, Accept: raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json', ...(body ? { 'Content-Type': 'application/json' } : {}) },
         body: body ? JSON.stringify(body) : undefined,
       });
       if (!r.ok) {
@@ -92,7 +103,7 @@
         try { e.detail = (await r.json()).message; } catch {}
         throw e;
       }
-      return r.status === 204 ? null : r.json();
+      return raw ? r.arrayBuffer() : r.status === 204 ? null : r.json();
     }
 
     // Copy repo changes to the phone. Returns the paths that changed locally.
@@ -100,6 +111,7 @@
       const commit = await api('GET', 'git/commits/' + head);
       const tree = await api('GET', 'git/trees/' + commit.tree.sha + '?recursive=1');
       const changed = [], seen = new Set();
+      try { o.onTree && o.onTree(tree.tree); } catch (e) { console.warn(e); }
       for (const e of tree.tree) {
         if (e.type !== 'blob' || !PATH_RE.test(e.path)) continue;
         const path = e.path.slice(0, -5);
@@ -126,8 +138,15 @@
     }
 
     async function push(head) {
-      const snap = { ...dirty }, entries = [], texts = {};
+      const snap = { ...dirty }, entries = [], texts = {}, files = {};
       for (const path of Object.keys(snap)) {
+        if (FILE_RE.test(path)) {
+          const bytes = o.getFile ? await o.getFile(path) : null;
+          if (!bytes) { delete dirty[path]; continue; }
+          files[path] = (await api('POST', 'git/blobs', { content: toB64(bytes), encoding: 'base64' })).sha;
+          entries.push({ path, mode: '100644', type: 'blob', sha: files[path] });
+          continue;
+        }
         const doc = o.getDoc(path);
         if (!doc || !PATH_RE.test(path + '.json')) { delete dirty[path]; continue; }
         texts[path] = toText(doc);
@@ -136,12 +155,16 @@
       saveDirty();
       if (!entries.length) return true;
       const tree = await api('POST', 'git/trees', { base_tree: meta.tree, tree: entries });
-      const commit = await api('POST', 'git/commits', { message: message(Object.keys(texts)), tree: tree.sha, parents: [head] });
+      const commit = await api('POST', 'git/commits', { message: message([...Object.keys(texts), ...Object.keys(files)]), tree: tree.sha, parents: [head] });
       try { await api('PATCH', 'git/refs/heads/' + cfg.branch, { sha: commit.sha }); }
       catch (e) { if (e.status === 422 || e.status === 409) return false; throw e; } // someone else pushed first: pull again, retry
       for (const path of Object.keys(texts)) {
         meta.sha[path] = await blobSha(texts[path]);
         if (dirty[path] === snap[path]) delete dirty[path];
+      }
+      for (const [path, sha] of Object.entries(files)) {
+        if (dirty[path] === snap[path]) delete dirty[path];
+        try { o.onFile && o.onFile(path, sha); } catch (e) { console.warn(e); }
       }
       meta.head = commit.sha; meta.tree = tree.sha;
       saveDirty(); saveMeta();
@@ -179,6 +202,15 @@
 
     return {
       status, run, schedule, blobSha, mergeDay,
+      // Every file in the repo right now (for photos the phone hasn't seen yet).
+      async tree() {
+        if (!cfg || !cfg.token) return null;
+        const ref = await api('GET', 'git/ref/heads/' + cfg.branch);
+        const commit = await api('GET', 'git/commits/' + ref.object.sha);
+        return (await api('GET', 'git/trees/' + commit.tree.sha + '?recursive=1')).tree;
+      },
+      // One file's bytes by its id (ids never change, so the browser may cache these).
+      blob(sha) { return api('GET', 'git/blobs/' + sha, null, true); },
       get cfg() { return cfg && { repo: cfg.repo, branch: cfg.branch, hasToken: !!cfg.token }; },
       mark(path) { dirty[path] = (dirty[path] || 0) + 1; saveDirty(); emit(); if (cfg) schedule(); },
       // Mark every document on the phone as unsent (first connect, or after a reset).
@@ -195,5 +227,5 @@
   }
 
   root.createSync = createSync;
-  root.SyncInternals = { blobSha, mergeDay, b64Text, toText, explain };
+  root.SyncInternals = { blobSha, mergeDay, b64Text, toB64, toText, explain };
 })(typeof window !== 'undefined' ? window : globalThis);
