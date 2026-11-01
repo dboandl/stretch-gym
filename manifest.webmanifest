@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "Stretch & Gym",
+  "short_name": "Stretch",
+  "description": "Stretching, pull-ups and workouts. Works offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F4F1",
+  "theme_color": "#F3F4F1",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Morning stretch", "short_name": "Morning", "url": "./#morning", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Desk stretch", "short_name": "Desk", "url": "./#desk", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Cooldown", "short_name": "Cooldown", "url": "./#cooldown", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Home workout", "short_name": "Home", "url": "./#home", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
