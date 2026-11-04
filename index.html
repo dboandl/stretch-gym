@@ -496,13 +496,13 @@ details.tv summary{cursor:pointer;color:var(--accent);font-weight:700;font-size:
   </header>
   <div id="testbar"></div>
   <main>
-    <div id="tab-dehnen" role="tabpanel" aria-label="Stretch"></div>
+    <div id="tab-dehnen" role="tabpanel" aria-label="Daily"></div>
     <div id="tab-gym" role="tabpanel" aria-label="Workout" hidden></div>
     <div id="tab-stats" role="tabpanel" aria-label="Stats" hidden></div>
   </main>
 </div>
 <nav class="tabbar" role="tablist" aria-label="Sections">
-  <button role="tab" data-tab="dehnen" aria-selected="true"><i id="ti-dehnen"></i>Stretch</button>
+  <button role="tab" data-tab="dehnen" aria-selected="true"><i id="ti-dehnen"></i>Daily</button>
   <button role="tab" data-tab="gym" aria-selected="false"><i id="ti-gym"></i>Workout</button>
   <button role="tab" data-tab="stats" aria-selected="false"><i id="ti-stats"></i>Stats</button>
 </nav>
@@ -2831,7 +2831,7 @@ function renderStats() {
       ${lineChart({ id: 'max-' + g, W, H: 84, pts: list.map(x => ({ k: x.k, v: x.n, title: fmtDate(x.k), rows: [{ v: plural(x.n, 'clean rep', 'clean reps'), l: nm.toLowerCase(), c: GRIPS[g].c }] })), from, to, small: true, c: GRIPS[g].c, goal: MAX_GOAL, label: nm + ' max test' })}</div>`;
   };
   const maxes = `<section class="card"><h3>Max test per grip</h3>
-    <p class="cap">${tests.length ? `Clean reps in one set · goal ${MAX_GOAL} in each grip (top line) · ${fmtDM(from)} – ${fmtDM(to)}` : 'No max tests in this period yet. You’ll find the test on the Stretch tab, under the pull-up counter.'}</p>
+    <p class="cap">${tests.length ? `Clean reps in one set · goal ${MAX_GOAL} in each grip (top line) · ${fmtDM(from)} – ${fmtDM(to)}` : 'No max tests in this period yet. You’ll find the test on the Daily tab, under the pull-up counter.'}</p>
     ${tests.length ? `<div class="multi" style="grid-template-columns:minmax(0,1fr)">${GRIP_KEYS.map(maxRow).join('')}</div>` + tv(['Date', 'Grip', 'Clean reps'], tests.slice().reverse().map(x => [fmtDate(x.k), GRIPS[x.grip].name, x.n])) : ''}</section>`;
   // Training volume per gym workout (kg × reps over all sets).
   const gses = ses.filter(isGym).filter(s => s.sets.some(x => x.kg != null));
