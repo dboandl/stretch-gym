@@ -1123,7 +1123,8 @@ const HOME = {
   A: { pairs: [['hsquat', 'puwide'], ['pushup', 'hrow'], ['bridge', 'kneeraise']] },
   B: { pairs: [['split', 'punar'], ['hpress', 'pullapart'], ['rdl1', 'deadbug']] },
 };
-const HEXTRA = ['hcurl', 'htri'];
+// Home extra = the other plan's leg pair (legs lag behind, arms are above the norm: Vicoach 2026-11).
+const HEXTRA = { A: ['split', 'rdl1'], B: ['hsquat', 'bridge'] };
 const ALT = { bei3a: ['bei3d'], bei3d: ['bei3a'], rue4b: ['latkabel'], bru2b: ['bru1a', 'bru5'], rue1f: ['mulrow'], bau4a: ['bau4b', 'bau2'],
   bru6: ['latkabel'], bru4b: ['sch1b', 'bru3b'], rue3: ['mulface'], bau6: ['bau4b', 'bau2'], a3a: ['multri'],
   hsquat: ['split'], split: ['hsquat'], rdl1: ['bridge'], bridge: ['rdl1'], puwide: ['pumed', 'punar'], punar: ['pumed', 'puwide'],
@@ -1138,7 +1139,7 @@ const PULL_GOAL = [12, 18];
 const GRIPS = { n: { name: 'Narrow', c: 'var(--grip-n)' }, m: { name: 'Medium', c: 'var(--grip-m)' }, w: { name: 'Wide', c: 'var(--grip-w)' } };
 const GRIP_KEYS = ['n', 'm', 'w'], EX_GRIP = { punar: 'n', pumed: 'm', puwide: 'w' }, MAX_GOAL = 20;
 const plansOf = place => place === 'home' ? HOME : PLAN;
-const extrasOf = place => place === 'home' ? HEXTRA : EXTRA;
+const extrasOf = (place, plan) => place === 'home' ? HEXTRA[plan] || HEXTRA.A : EXTRA;
 const planName = s => (s.place === 'home' ? 'Home ' : 'Plan ') + s.plan;
 const rangeOf = id => M[id].range || [8, 12];
 const setsOf = id => M[id].sets || 3;
@@ -1840,7 +1841,7 @@ const setsText = sets => {
 };
 function slotDefault(S, slot) {
   if (slot === 'f') return 'bosu';
-  if (slot[0] === 'x') return extrasOf(S.place)[+slot[1]];
+  if (slot[0] === 'x') return extrasOf(S.place, S.plan)[+slot[1]];
   return plansOf(S.place)[S.plan].pairs[+slot[1]][+slot[2]];
 }
 function mrow(id, extra = '') {
@@ -1920,7 +1921,7 @@ function renderGym() {
       <ol class="pairs">
         <li class="pair"><span class="num">↑</span><div class="mrow">${home ? 'Warm-up 5 min' : `${CARDIO[(resumable && cur.cardio) || CARDIO_CYCLE[nextCardio()]].full}, 10 min to warm up`}</div></li>
         ${home ? `${p.pairs.map((pr, i) => `<li class="pair"><span class="num">${i + 1}</span><div>${pr.map((id, k) => slotRow(id, `p${i}${k}`)).join('')}</div></li>`).join('')}
-        <li class="pair opt"><span class="num">+</span><div><div class="sub">Extra, if there’s time</div>${extrasOf(pl).map((id, k) => slotRow(id, 'x' + k)).join('')}</div></li>` : gymRows}
+        <li class="pair opt"><span class="num">+</span><div><div class="sub">Extra, if there’s time</div>${extrasOf(pl, plan).map((id, k) => slotRow(id, 'x' + k)).join('')}</div></li>` : gymRows}
         <li class="pair"><span class="num">↓</span><div class="mrow">Cool-down 3 min</div></li>
       </ol>
       <button class="btn primary big" data-act="${resumable ? 'ss-resume' : 'ss-start'}">${ICON.play} ${resumable ? 'Resume workout' : home ? 'Start home workout' : 'Start workout'}</button>
@@ -2185,10 +2186,10 @@ const SS = {
       </article>`;
   },
   vExtra() {
-    const pl = this.S.place, ex = extrasOf(pl);
+    const pl = this.S.place, ex = extrasOf(pl, this.S.plan);
     return `${this.waiting()}<section class="card">
-      <div class="eyebrow">Extra, if there’s time</div><h2 class="h2">Arms</h2>
-      <div class="sub">${h(M[ex[0]].name)} ↔ ${h(M[ex[1]].name)}, 3 sets each, alternating. About 8 min.</div>
+      <div class="eyebrow">Extra, if there’s time</div><h2 class="h2">More legs</h2>
+      <div class="sub">${h(M[ex[0]].name)} ↔ ${h(M[ex[1]].name)}, 3 sets each, alternating. About 10 min.</div>
       <ol class="pairs"><li class="pair"><span class="num">+</span><div>${ex.map(id => mrow(id)).join('')}</div></li></ol>
       <button class="btn primary big" data-act="extra-yes">Yes, let’s do it</button>
       <button class="btn block" data-act="extra-no">${pl === 'home' ? 'Skip, go to the cool-down' : 'Skip, go to the Bosu'}</button>
