@@ -1105,11 +1105,20 @@ const M = {
   hcurl: { g: 'arme', code: 'Band', name: 'Band biceps curl', home: true, load: 'band', fig: 'hcurl', q: 'resistance band bicep curl', range: [12, 15], cues: ['Stand on the middle of the band, ends wrapped around your hands', 'Palms forward, elbows stay at your sides', 'Curl up, lower slowly'] },
   htri: { g: 'arme', code: 'Band', name: 'Band overhead triceps extension', home: true, load: 'band', fig: 'htri', q: 'resistance band overhead tricep extension', range: [12, 15], cues: ['Split stance, the back foot stands on one end', 'Both hands hold the other end behind your head, elbows up', 'Straighten your arms overhead, lower slowly', 'Elbows stay close to your head'] },
 };
+// Legs get one extra machine per plan and the calf raise as the extra (Vicoach 2026-11: arms above the norm, legs behind).
 const PLAN = {
-  A: { pairs: [['bei3a', 'rue4b'], ['bru2b', 'rue1f'], ['bei2a', 'bau4a']] },
-  B: { pairs: [['bei3d', 'bru6'], ['bru4b', 'rue3'], ['urue2', 'bau6']] },
+  A: { pairs: [['bei3a', 'rue4b'], ['bru2b', 'rue1f'], ['bei2a', 'bau4a'], ['bei1']] },
+  B: { pairs: [['bei3d', 'bru6'], ['bru4b', 'rue3'], ['urue2', 'bau6'], ['bei2a']] },
 };
-const EXTRA = ['a1', 'a3a'];
+const EXTRA = ['bei4a'];
+// Warm-up machine, rotating from workout to workout. Legs lag behind the rest (Vicoach), so the AMT, which works the legs
+// and glutes hardest, comes up every second time; the rower also works the back and core, the cross-trainer is the easy day.
+const CARDIO = {
+  amt: { name: 'AMT', full: 'AMT (adaptive motion trainer)', why: 'Most leg and glute work.', cues: ['Upright, push through the whole foot', 'Short steps = stepping, longer = walking or running', 'Hands light on the handles, the legs do the work'] },
+  row: { name: 'Rower', full: 'Rower', why: 'Legs first, plus back and core.', cues: ['Push with the legs, then lean back, then pull with the arms', 'On the way back: arms, body, then knees', 'Damper 3–5, about 22–26 strokes a minute'] },
+  cross: { name: 'Cross-trainer', full: 'Cross-trainer (elliptical)', why: 'Smooth and easy on the joints.', cues: ['Upright, weight on the heels', 'Push and pull the handles lightly', 'Steady pace, no bouncing'] },
+};
+const CARDIO_CYCLE = ['amt', 'row', 'amt', 'cross'];
 const HOME = {
   A: { pairs: [['hsquat', 'puwide'], ['pushup', 'hrow'], ['bridge', 'kneeraise']] },
   B: { pairs: [['split', 'punar'], ['hpress', 'pullapart'], ['rdl1', 'deadbug']] },
@@ -1192,7 +1201,7 @@ const COLOR_NAME = Object.fromEntries(COLORS), colorRank = c => COLORS.findIndex
 const colorOf = id => G[M[id].g].c, gRank = id => Object.keys(G).indexOf(M[id].g);
 const byCode = (a, b) => M[a].code.localeCompare(M[b].code, 'en', { numeric: true }) || M[a].name.localeCompare(M[b].name);
 const wait = ms => new Promise(r => setTimeout(r, ms));
-// Today's machines: the plan's (with a stand-in where the studio lacks one), then the arms extra and the Bosu.
+// Today's machines: the plan's (with a stand-in where the studio lacks one), then the extra (calf raise) and the Bosu.
 function recsFor(plan, sid) {
   const out = [], seen = new Set();
   for (const [list, extra] of [[PLAN[plan].pairs.flat(), false], [[...EXTRA, 'bosu'], true]])
@@ -1813,6 +1822,7 @@ const PL = {
 let gymSel = null, place = LS.get('place', 'gym');
 function setPlace(p) { if (p !== place) gymSel = null; place = p; LS.set('place', p); }
 const gymLogged = () => logged().filter(s => s.place !== 'home');
+function nextCardio() { const l = gymLogged().find(s => s.cardioI != null); return l ? (l.cardioI + 1) % CARDIO_CYCLE.length : 0; }
 function nextPlan(pl) { const l = logged().find(s => (s.place === 'home' ? 'home' : 'gym') === pl); return l ? (l.plan === 'A' ? 'B' : 'A') : 'A'; }
 function lastFor(exId, skipId) {
   for (const s of D.sessions) {
@@ -1908,7 +1918,7 @@ function renderGym() {
       </div>
       ${restNote ? `<div class="note">${restNote}</div>` : ''}
       <ol class="pairs">
-        <li class="pair"><span class="num">↑</span><div class="mrow">${home ? 'Warm-up 5 min' : 'Stepper 10 min to warm up'}</div></li>
+        <li class="pair"><span class="num">↑</span><div class="mrow">${home ? 'Warm-up 5 min' : `${CARDIO[(resumable && cur.cardio) || CARDIO_CYCLE[nextCardio()]].full}, 10 min to warm up`}</div></li>
         ${home ? `${p.pairs.map((pr, i) => `<li class="pair"><span class="num">${i + 1}</span><div>${pr.map((id, k) => slotRow(id, `p${i}${k}`)).join('')}</div></li>`).join('')}
         <li class="pair opt"><span class="num">+</span><div><div class="sub">Extra, if there’s time</div>${extrasOf(pl).map((id, k) => slotRow(id, 'x' + k)).join('')}</div></li>` : gymRows}
         <li class="pair"><span class="num">↓</span><div class="mrow">Cool-down 3 min</div></li>
@@ -1950,7 +1960,7 @@ const SS = {
     const date = TODAY(), grid = pl !== 'home';
     this.S = { id: `${date}-${pl === 'home' ? 'home' : ''}${plan}-${Math.random().toString(36).slice(2, 7)}`, date, plan, place: pl, startedAt: new Date().toISOString(), endedAt: null,
       sets: [], subs: {}, auto: {}, studio: pl === 'home' ? null : curStudio(), test: pl !== 'home' && gymLogged().length < 3, step: 0, skipExtra: false, restUntil: 0, restTotal: 0, warmEnd: 0, warmLeft: warmMs(pl), cooled: false,
-      ...(grid ? { grid: true, view: 'warm', cur: null, more: [] } : { q: clone(SCHED_HOME) }) };
+      ...(grid ? { grid: true, view: 'warm', cur: null, more: [], cardioI: nextCardio(), cardio: CARDIO_CYCLE[nextCardio()] } : { q: clone(SCHED_HOME) }) };
     this.pending = null;
     this.saveLocal(); this.open();
   },
@@ -1994,7 +2004,7 @@ const SS = {
   saveLocal() { LS.set('cur', this.S); },
   saveRemote() {
     const S = this.S; if (!S.sets.length) return;
-    const doc = { date: S.date, plan: S.plan, place: S.place || 'gym', ...(S.studio ? { studio: S.studio } : {}), startedAt: S.startedAt, endedAt: S.endedAt, sets: S.sets, subs: S.subs, test: S.test, cooled: !!S.cooled, skipExtra: !!S.skipExtra };
+    const doc = { date: S.date, plan: S.plan, place: S.place || 'gym', ...(S.studio ? { studio: S.studio } : {}), startedAt: S.startedAt, endedAt: S.endedAt, sets: S.sets, subs: S.subs, test: S.test, cooled: !!S.cooled, skipExtra: !!S.skipExtra, ...(S.cardio ? { cardio: S.cardio, cardioI: S.cardioI } : {}) };
     Store.put('sessions/' + S.id, doc);
     upsertSession({ ...clone(doc), id: S.id });
   },
@@ -2059,8 +2069,10 @@ const SS = {
     const intro = S.place === 'home'
       ? `<h2 class="h2">5 minutes</h2>
         <ul class="cues"><li>1 min marching on the spot or jumping jacks</li><li>10 arm circles each way</li><li>10 slow bodyweight squats</li><li>10 band pull-aparts, light band</li><li>2 × 20 s dead hang</li></ul>`
-      : `<h2 class="h2">Stepper</h2>
-        <div class="sub">10 min at an easy pace, you should still be able to talk.</div>`;
+      : (c => `<div class="seg wide" role="group" aria-label="Machine">${Object.entries(CARDIO).map(([k, x]) => `<button data-cardio="${k}" aria-pressed="${k === c}">${x.name}</button>`).join('')}</div>
+        <h2 class="h2">${CARDIO[c].full}</h2>
+        <div class="sub">10 min at an easy pace, you should still be able to talk. ${CARDIO[c].why}${c !== CARDIO_CYCLE[S.cardioI ?? 0] ? '' : ' Taken? Pick another one above.'}</div>
+        <ul class="cues">${CARDIO[c].cues.map(x => `<li>${x}</li>`).join('')}</ul>`)(S.cardio || 'amt');
     return `<section class="card">
       <div class="eyebrow">Warm-up</div>${intro}
       <div class="bigtime" id="warm-num">${fmtClock(left + 999)}</div>
@@ -2979,7 +2991,7 @@ const ACT = {
 };
 document.addEventListener('click', e => {
   if (e.target.id === 'pv-img') return PV.zoom(e);
-  const t = e.target.closest('[data-act],[data-play],[data-variant],[data-pull],[data-tab],[data-plan],[data-alt],[data-place],[data-band],[data-photo],[data-pick],[data-pkg],[data-now],[data-studio],[data-range],[data-grip],[data-tile]');
+  const t = e.target.closest('[data-act],[data-play],[data-variant],[data-pull],[data-tab],[data-plan],[data-alt],[data-place],[data-band],[data-photo],[data-pick],[data-pkg],[data-now],[data-studio],[data-range],[data-grip],[data-tile],[data-cardio]');
   if (!t || t.disabled) return;
   const d = t.dataset;
   if (d.tab) return setTab(d.tab);
@@ -2996,6 +3008,7 @@ document.addEventListener('click', e => {
   if (d.pkg) return PK.setG(d.pkg);
   if (d.now) return SS.now(d.now);
   if (d.tile) return SS.pickMachine(d.tile);
+  if (d.cardio) { SS.S.cardio = d.cardio; SS.saveLocal(); SS.saveRemote(); return SS.render(); }
   if (d.studio) return STD.pick(d.studio);
   if (d.range) { LS.set('statsRange', d.range); return renderStats(); }
   if (ACT[d.act]) ACT[d.act](t, e);
