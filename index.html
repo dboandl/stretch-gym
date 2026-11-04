@@ -325,6 +325,43 @@ button.stat.on b{color:var(--accent)}
 .waitbar div{display:flex;flex-direction:column;font-size:15px;line-height:1.3}
 .waitbar span{color:var(--muted);font-size:13px}
 .waitbar .btn{flex:none}
+/* Gym grid: every machine by colour; today's are outlined, done or "enough" ones sink to the bottom */
+.gr-head{display:flex;flex-direction:column;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 7px;font-size:13px;font-weight:700;background:var(--surface);font-variant-numeric:tabular-nums}
+.chip::before{content:"";width:12px;height:12px;border-radius:3px;background:var(--gc);flex:none}
+.chip.ok{color:var(--muted);border-style:dashed}
+.chip.pop{animation:cpop .6s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes cpop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:3px}
+@media (min-width:480px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tile{position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:left;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;cursor:pointer;min-height:150px;-webkit-appearance:none;appearance:none;transition:transform .4s cubic-bezier(.2,.7,.2,1),opacity .3s,filter .3s}
+.tile.rec{border-color:transparent;box-shadow:0 0 0 3px var(--gc)}
+.tile.busy{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.tile.full{opacity:.72}
+.tile.enough{filter:grayscale(1);opacity:.42}
+.tile .tb{display:flex;justify-content:space-between;align-items:center;gap:4px;background:var(--gc);color:#1B1F1D;font:700 13px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;padding:6px 8px}
+.tile .tb em{font-style:normal;font-size:12px}
+.tile .ti{aspect-ratio:4/3;background:var(--surface2);--fig-bg:var(--surface2);display:grid;place-items:center;overflow:hidden}
+.tile .ti img,.tile .ti svg{width:100%;height:100%;object-fit:cover;display:block}
+.tile .ti small{font-size:11px;line-height:1.2;color:var(--muted);text-align:center;padding:6px}
+.tile .tn{padding:6px 8px 0;font-size:13px;line-height:1.2;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tile .tf{margin-top:auto;padding:5px 8px 7px;display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pips{display:inline-flex;gap:3px}
+.pips i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.pips i.on{background:var(--accent)}
+.tile.other{border-style:dashed;justify-content:center;align-items:center;gap:6px;color:var(--muted);font-weight:700;font-size:13px}
+.tile.other svg{width:26px;height:26px}
+.tdiv{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:12px 0 0;border-top:1px solid var(--line);margin-top:4px}
+.tile.flash::after{content:"";position:absolute;inset:0;background:var(--gc);animation:tflash .6s steps(1,end) forwards}
+@keyframes tflash{0%,20%,40%,60%,80%{opacity:.9}10%,30%,50%,70%,90%,100%{opacity:0}}
+.tile.gone{animation:tgone .28s ease-in forwards}
+@keyframes tgone{to{transform:scaleY(.06);opacity:0}}
+.tile.arrive{animation:tarrive .45s cubic-bezier(.2,.8,.3,1.2) both}
+@keyframes tarrive{from{opacity:0;transform:translateY(28px) scale(.8)}to{transform:none}}
+.btn.sm{min-height:38px;padding:6px 12px;font-size:14px;flex:none}
+.pair .num .dot{display:inline-block;margin-top:5px}
+@media (prefers-reduced-motion:reduce){.tile,.chip{transition:none;animation:none!important}.tile::after{animation:none}}
 .dlg.pk{width:min(520px,calc(100% - 24px));max-height:calc(100% - 24px)}
 .pk-list h4{margin:10px 0 4px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
 .pk-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;border:1px solid transparent;border-radius:12px;background:none;padding:6px;cursor:pointer;min-height:56px}
@@ -1146,6 +1183,43 @@ function swapFor(def, sid) {
   return [...kind(k), ...(ALT[def] || []).filter(id => M[id] && atStudio(id, sid)), ...(KIN[k] || []).flatMap(kind)][0] || def;
 }
 
+// ---------- Gym grid: every machine of the studio, by colour ----------
+// A gym workout is a grid of all the studio's machines, sorted by colour (muscle group). Today's plan
+// machines are outlined. 3 sets on one machine, then the next. Once as many machines of a colour are done
+// as the plan asks for, the rest of that colour turns grey and sinks to the bottom, next to the done ones.
+const COLORS = [['var(--c-beine)', 'Legs & glutes'], ['var(--c-brust)', 'Chest'], ['var(--c-ruecken)', 'Back'], ['var(--c-schulter)', 'Shoulders & arms'], ['var(--c-bauch)', 'Abs & lower back'], ['var(--c-multi)', 'Multi']];
+const COLOR_NAME = Object.fromEntries(COLORS), colorRank = c => COLORS.findIndex(x => x[0] === c);
+const colorOf = id => G[M[id].g].c, gRank = id => Object.keys(G).indexOf(M[id].g);
+const byCode = (a, b) => M[a].code.localeCompare(M[b].code, 'en', { numeric: true }) || M[a].name.localeCompare(M[b].name);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+// Today's machines: the plan's (with a stand-in where the studio lacks one), then the arms extra and the Bosu.
+function recsFor(plan, sid) {
+  const out = [], seen = new Set();
+  for (const [list, extra] of [[PLAN[plan].pairs.flat(), false], [[...EXTRA, 'bosu'], true]])
+    for (const def of list) { const id = swapFor(def, sid); if (!seen.has(id)) { seen.add(id); out.push({ id, def, extra }); } }
+  return out;
+}
+const GRID = {
+  // One entry per tile, sorted as the grid shows them: active first (by colour, planned ones first), then the sunk ones.
+  model(S) {
+    const sid = S.studio, recs = recsFor(S.plan, sid), rec = {};
+    recs.forEach((r, i) => { rec[r.id] = { i, extra: r.extra, def: r.def }; });
+    const ids = [...new Set([...Object.keys(M).filter(id => !M[id].home && atStudio(id, sid)), ...recs.map(r => r.id), ...(S.more || [])])].filter(id => M[id] && !M[id].home);
+    const today = {}; for (const x of S.sets) today[x.ex] = (today[x.ex] || 0) + 1;
+    const quota = {}, done = {};
+    for (const r of recs) quota[colorOf(r.id)] = (quota[colorOf(r.id)] || 0) + 1;
+    for (const id of ids) if ((today[id] || 0) >= setsOf(id)) done[colorOf(id)] = (done[colorOf(id)] || 0) + 1;
+    const tiles = ids.map(id => {
+      const c = colorOf(id), n = today[id] || 0, of = setsOf(id), full = n >= of;
+      const enough = !n && !!quota[c] && (done[c] || 0) >= quota[c];
+      return { id, c, n, of, full, enough, sunk: full || enough, rec: !!rec[id], extra: !!(rec[id] && rec[id].extra), def: rec[id] && rec[id].def, i: rec[id] ? rec[id].i : 99 };
+    }).sort((a, b) => a.sunk - b.sunk || colorRank(a.c) - colorRank(b.c) || a.i - b.i || gRank(a.id) - gRank(b.id) || byCode(a.id, b.id));
+    const colors = COLORS.filter(([c]) => quota[c]).map(([c, name]) => ({ c, name, q: quota[c], d: Math.min(done[c] || 0, quota[c]) }));
+    const q = colors.reduce((s, x) => s + x.q, 0), d = colors.reduce((s, x) => s + x.d, 0);
+    return { tiles, today, colors, progress: q ? d / q : 0 };
+  },
+};
+
 // ---------- Storage: on the phone first, then copied to GitHub (sync.js) ----------
 const COLLS = ['days', 'sessions', 'machines', 'settings'];
 const Store = {
@@ -1791,6 +1865,10 @@ function renderGym() {
   const studioRow = home || resumable ? '' : `<button class="studio" data-act="studio-open" aria-haspopup="dialog">${ICON.pin}<span>${sid
     ? `<b>FitInn ${h(studioName(sid))}</b><small>${sid === usualStudio() ? 'Your usual studio' : today && today.date === TODAY() ? 'Today only · usual: ' + h(studioName(usualStudio())) : ''} · ${studioHas(sid).size} machines</small>`
     : '<b>Which FitInn?</b><small>Pick your studio, and the plan uses the machines it has.</small>'}</span><em>Change</em></button>`;
+  // Gym: today's machines grouped by colour (the grid in the workout shows every machine of the studio).
+  const recs = home ? [] : recsFor(plan, sid);
+  const gymRows = COLORS.filter(([c]) => recs.some(r => colorOf(r.id) === c)).map(([c, name]) => `<li class="pair"><span class="num"><span class="dot" style="--gc:${c}"></span></span><div><div class="sub">${name}</div>${
+    recs.filter(r => colorOf(r.id) === c).map(r => mrow(r.id, (r.id !== r.def ? ` <span class="for">for ${h(M[r.def].name)}</span>` : '') + (r.id === 'bosu' ? ' · 2 × 12–15' : r.extra ? ' <span class="for">· extra, if there’s time</span>' : ''))).join('')}</div></li>`).join('');
   const hist = all.slice(0, 6).map(s => {
     const mins = s.endedAt ? Math.round((Date.parse(s.endedAt) - Date.parse(s.startedAt)) / 60000) : null;
     const by = {}; s.sets.forEach(x => (by[x.ex] = by[x.ex] || []).push(x));
@@ -1804,9 +1882,10 @@ function renderGym() {
     'Push-ups, split squats, single-leg deadlifts: at the top of the range, add a band.',
     'Pull-ups: stop 1–2 reps before you fail. 8 in every set → lower slowly (3 s).',
   ] : [
-    '3 sets of 8–12 reps; abs and lower back 12–15.',
+    '3 sets of 8–12 reps on one machine, then the next; abs and lower back 12–15.',
     'Hit 12 in every set, then go up one step next time.',
-    'Superset: alternate the two machines, 45 s rest in between.',
+    'Rest 75 s between sets.',
+    'Outlined machines are today’s plan. Any machine of the same colour counts: once a colour is done, the rest of it turns grey.',
     'The last 1–2 reps are hard but clean.',
   ];
   $('#tab-gym').innerHTML = `
@@ -1823,16 +1902,15 @@ function renderGym() {
         <div>
           <div class="eyebrow">${resumable ? 'In progress' : home ? 'Next home workout' : 'Next workout'}</div>
           <h2 class="h2">${home ? 'Home' : 'Plan'} ${plan}</h2>
-          <div class="sub">${home ? 'Full body · bands, floor, bar · about 30 min' : 'Full body · supersets · about 45 min'}</div>
+          <div class="sub">${home ? 'Full body · bands, floor, bar · about 30 min' : 'Full body · one machine at a time · about 45 min'}</div>
         </div>
         ${resumable ? '' : `<div class="seg" role="group" aria-label="Plan">${['A', 'B'].map(x => `<button data-plan="${x}" aria-pressed="${x === plan}">${x}</button>`).join('')}</div>`}
       </div>
       ${restNote ? `<div class="note">${restNote}</div>` : ''}
       <ol class="pairs">
         <li class="pair"><span class="num">↑</span><div class="mrow">${home ? 'Warm-up 5 min' : 'Stepper 10 min to warm up'}</div></li>
-        ${p.pairs.map((pr, i) => `<li class="pair"><span class="num">${i + 1}</span><div>${pr.map((id, k) => slotRow(id, `p${i}${k}`)).join('')}</div></li>`).join('')}
-        <li class="pair opt"><span class="num">+</span><div><div class="sub">Extra, if there’s time</div>${extrasOf(pl).map((id, k) => slotRow(id, 'x' + k)).join('')}</div></li>
-        ${home ? '' : `<li class="pair"><span class="num">★</span><div>${mrow('bosu', ' · 2 × 12–15')}</div></li>`}
+        ${home ? `${p.pairs.map((pr, i) => `<li class="pair"><span class="num">${i + 1}</span><div>${pr.map((id, k) => slotRow(id, `p${i}${k}`)).join('')}</div></li>`).join('')}
+        <li class="pair opt"><span class="num">+</span><div><div class="sub">Extra, if there’s time</div>${extrasOf(pl).map((id, k) => slotRow(id, 'x' + k)).join('')}</div></li>` : gymRows}
         <li class="pair"><span class="num">↓</span><div class="mrow">Cool-down 3 min</div></li>
       </ol>
       <button class="btn primary big" data-act="${resumable ? 'ss-resume' : 'ss-start'}">${ICON.play} ${resumable ? 'Resume workout' : home ? 'Start home workout' : 'Start workout'}</button>
@@ -1866,11 +1944,14 @@ const warmMs = pl => pl === 'home' ? 300000 : 600000;
 const SS = {
   S: null, active: false, timer: 0, raf: 0, draft: null, lastRest: null,
   get sched() { return this.S.q || (this.S.place === 'home' ? SCHED_HOME : SCHED); },
+  // Gym workouts use the machine grid (S.view: warm → grid ⇄ set → cool → done); home workouts follow S.q step by step.
+  get grid() { return !!(this.S && this.S.grid); },
   start(pl, plan) {
-    const date = TODAY();
+    const date = TODAY(), grid = pl !== 'home';
     this.S = { id: `${date}-${pl === 'home' ? 'home' : ''}${plan}-${Math.random().toString(36).slice(2, 7)}`, date, plan, place: pl, startedAt: new Date().toISOString(), endedAt: null,
-      sets: [], subs: {}, auto: {}, studio: pl === 'home' ? null : curStudio(), q: clone(pl === 'home' ? SCHED_HOME : SCHED), test: pl !== 'home' && gymLogged().length < 3, step: 0, skipExtra: false, restUntil: 0, restTotal: 0, warmEnd: 0, warmLeft: warmMs(pl), cooled: false };
-    this.applyStudio();
+      sets: [], subs: {}, auto: {}, studio: pl === 'home' ? null : curStudio(), test: pl !== 'home' && gymLogged().length < 3, step: 0, skipExtra: false, restUntil: 0, restTotal: 0, warmEnd: 0, warmLeft: warmMs(pl), cooled: false,
+      ...(grid ? { grid: true, view: 'warm', cur: null, more: [] } : { q: clone(SCHED_HOME) }) };
+    this.pending = null;
     this.saveLocal(); this.open();
   },
   // Machines this studio doesn't have get a stand-in (S.auto marks those, so a later studio change can redo
@@ -1884,11 +1965,12 @@ const SS = {
       if (sw === def) { delete S.subs[slot]; delete S.auto[slot]; } else { S.subs[slot] = sw; S.auto[slot] = true; }
     }
   },
-  setStudio(sid) { this.S.studio = sid; this.applyStudio(); this.draft = null; this.saveLocal(); this.saveRemote(); this.render(); },
+  setStudio(sid) { this.S.studio = sid; if (!this.grid) this.applyStudio(); this.draft = null; this.saveLocal(); this.saveRemote(); this.render(); },
   resume() {
     const c = LS.get('cur', null); if (!c) return renderGym();
-    if (!c.q) c.q = clone(c.place === 'home' ? SCHED_HOME : SCHED); // started before workouts kept their own order
-    this.S = c; this.open();
+    if (c.place !== 'home') { if (!c.grid) { c.grid = true; c.view = c.sets.length ? 'grid' : 'warm'; c.cur = null; c.more = []; } } // started before the grid
+    else if (!c.q) c.q = clone(SCHED_HOME); // started before workouts kept their own order
+    this.S = c; this.pending = null; this.open();
   },
   open() {
     this.active = true; this.draft = null;
@@ -1934,8 +2016,8 @@ const SS = {
       if (left <= 0) {
         S.restUntil = 0; this.saveLocal();
         beep(880, 300); try { navigator.vibrate && navigator.vibrate(250); } catch {}
-        const st = this.sched[S.step];
-        speak(st.t === 'set' ? 'Next: ' + M[this.exFor(st.slot)].name : 'Next.');
+        const st = this.grid ? null : this.sched[S.step];
+        speak(this.grid ? (S.view === 'set' ? 'Next set.' : 'Rest done. Pick the next machine.') : st.t === 'set' ? 'Next: ' + M[this.exFor(st.slot)].name : 'Next.');
         const r = $('#rest'); if (r) r.remove();
       }
     }
@@ -1946,10 +2028,18 @@ const SS = {
     }
   },
   render() {
-    const S = this.S, st = this.sched[S.step];
+    const S = this.S;
     $('#ss-title').textContent = `${planName(S)}${S.test ? ' · Test week' : ''}${S.studio && S.studio !== usualStudio() ? ' · ' + studioName(S.studio) : ''}`;
-    $('#ss-prog').style.width = (100 * S.step / (this.sched.length - 1)).toFixed(1) + '%';
     const body = $('#ss-body');
+    if (this.grid) {
+      const md = GRID.model(S), v = S.view;
+      $('#ss-prog').style.width = (100 * md.progress).toFixed(1) + '%';
+      body.innerHTML = v === 'warm' ? this.vWarm() : v === 'set' ? this.vSet(null, md) : v === 'cool' ? this.vCool() : v === 'done' ? this.vDone() : this.vGrid(md);
+      if (v === 'grid' && this.pending) this.animateClear();
+      return this.tick();
+    }
+    const st = this.sched[S.step];
+    $('#ss-prog').style.width = (100 * S.step / (this.sched.length - 1)).toFixed(1) + '%';
     if (st.t === 'warm') body.innerHTML = this.vWarm();
     else if (st.t === 'set') body.innerHTML = this.vSet(st);
     else if (st.t === 'extra') body.innerHTML = this.vExtra();
@@ -1965,7 +2055,7 @@ const SS = {
   },
   vWarm() {
     const S = this.S, running = !!S.warmEnd, left = running ? S.warmEnd - Date.now() : S.warmLeft;
-    const first = M[this.exFor('p00')];
+    const first = M[this.grid ? recsFor(S.plan, S.studio)[0].id : this.exFor('p00')];
     const intro = S.place === 'home'
       ? `<h2 class="h2">5 minutes</h2>
         <ul class="cues"><li>1 min marching on the spot or jumping jacks</li><li>10 arm circles each way</li><li>10 slow bodyweight squats</li><li>10 band pull-aparts, light band</li><li>2 × 20 s dead hang</li></ul>`
@@ -2027,13 +2117,15 @@ const SS = {
     this.draft.band = k;
     document.querySelectorAll('[data-band]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.band === (k || '0'))));
   },
-  vSet(st) {
-    const S = this.S, exId = this.exFor(st.slot), m = M[exId], g = G[m.g], r = rangeOf(exId);
+  vSet(st, md) {
+    const S = this.S, grid = this.grid, exId = grid ? S.cur : this.exFor(st.slot), m = M[exId], g = G[m.g], r = rangeOf(exId);
     const of = setsOf(exId);
-    const sg = m.home ? this.suggestHome(exId, st.set) : this.suggest(exId, st.set);
-    if (!this.draft || this.draft.step !== S.step || this.draft.ex !== exId) this.draft = { step: S.step, ex: exId, kg: sg.kg, reps: sg.reps, band: sg.band };
     const today = S.sets.filter(x => x.ex === exId);
-    const def = slotDefault(S, st.slot), alts = [def, ...(ALT[def] || [])];
+    // In the grid the set number is simply how many sets this machine has today, plus one.
+    const setNo = grid ? today.length + 1 : st.set, key = grid ? today.length : S.step;
+    const sg = m.home ? this.suggestHome(exId, setNo) : this.suggest(exId, setNo);
+    if (!this.draft || this.draft.step !== key || this.draft.ex !== exId) this.draft = { step: key, ex: exId, kg: sg.kg, reps: sg.reps, band: sg.band };
+    const def = grid ? exId : slotDefault(S, st.slot), alts = [def, ...(ALT[def] || [])];
     const bandKeys = m.load === 'bwband' ? ['0', ...BAND_KEYS] : BAND_KEYS;
     const load = !m.home
       ? `<div class="stepper"><label for="in-kg">Weight</label>
@@ -2043,19 +2135,20 @@ const SS = {
       : m.load === 'bw' ? ''
       : `<div class="bands"><span class="lbl" id="band-lbl">Band</span><div class="alts" role="group" aria-labelledby="band-lbl">${bandKeys.map(k => `<button class="alt" data-band="${k}" aria-pressed="${(this.draft.band || '0') === k}">${k === '0' ? 'No band' : BANDS[k]}</button>`).join('')}</div></div>`;
     // Alternating only while the partner's sets are right next to this one (not after "do it later").
-    const pslot = st.pair[0] === 'p' || st.pair === 'x' ? st.slot.slice(0, -1) + (st.slot.endsWith('0') ? '1' : '0') : null;
+    const pslot = !grid && (st.pair[0] === 'p' || st.pair === 'x') ? st.slot.slice(0, -1) + (st.slot.endsWith('0') ? '1' : '0') : null;
     const near = pslot && [this.sched[S.step - 1], this.sched[S.step + 1]].some(x => x && x.t === 'set' && x.slot === pslot);
     const partner = near ? this.exFor(pslot) : null;
-    const label = (st.later ? 'Moved to later · ' : '') + (st.pair === 'f' ? 'Finisher · balance' : st.pair === 'x' ? 'Extra' : `Superset ${st.pi + 1} of 3`);
-    const v = vidOf(m), setting = D.machines[exId]?.setting || '', canLater = !!this.laterPlan();
-    return `${this.restBanner(m.name)}${this.waiting()}
-      <div class="pairlabel">${label}${partner ? ` · alternating with ${h(M[partner].name)}` : ''}${exId !== def ? ` · instead of ${h(M[def].name)}${atStudio(def, S.studio) ? '' : ' (not at this studio)'}` : atStudio(def, S.studio) ? '' : ' · not at this studio: pick a similar machine or skip'}</div>
+    const label = grid ? '' : (st.later ? 'Moved to later · ' : '') + (st.pair === 'f' ? 'Finisher · balance' : st.pair === 'x' ? 'Extra' : `Superset ${st.pi + 1} of 3`);
+    const v = vidOf(m), setting = D.machines[exId]?.setting || '', canLater = !grid && !!this.laterPlan();
+    return `${this.restBanner(grid ? `set ${setNo}` : m.name)}${grid ? '' : this.waiting()}
+      ${grid ? `<div class="row between"><button class="btn sm" data-act="gr-back">‹ All machines</button><div class="pairlabel">${this.gridLabel(md, exId)}</div></div>`
+        : `<div class="pairlabel">${label}${partner ? ` · alternating with ${h(M[partner].name)}` : ''}${exId !== def ? ` · instead of ${h(M[def].name)}${atStudio(def, S.studio) ? '' : ' (not at this studio)'}` : atStudio(def, S.studio) ? '' : ' · not at this studio: pick a similar machine or skip'}</div>`}
       <article class="sticker" style="--gc:${g.c}">
         <div class="band"><span>${h(m.code)}</span><small>${h(g.name)}</small></div>
         <div class="body">
           <div class="ss-head"><div>
             <h2>${h(m.name)}</h2>
-            <div class="meta">Set ${st.set} of ${of} · target ${r[0]}–${r[1]} reps${m.per ? ' per ' + m.per : ''}${m.de ? ` · on the machine: ${h(m.de)}` : ''}</div>
+            <div class="meta">${setNo <= of ? `Set ${setNo} of ${of}` : `Extra set ${setNo} · ${of} done`} · target ${r[0]}–${r[1]} reps${m.per ? ' per ' + m.per : ''}${m.de ? ` · on the machine: ${h(m.de)}` : ''}</div>
           </div><div class="ss-photos" id="ss-photos" data-ex="${exId}">${Photos.thumbs(exId)}</div></div>
           ${m.fig ? `<div class="ss-fig"><svg class="fig" id="ss-anim" data-fig="${m.fig}" viewBox="0 -14 240 204" aria-hidden="true"></svg></div>` : ''}
           ${sg.last ? `<div class="last"><span class="muted">Last time (${ago(sg.last.date)}):</span> <b>${setsText(sg.last.sets)}</b></div>` : ''}
@@ -2068,14 +2161,14 @@ const SS = {
             <button data-act="reps+" aria-label="More reps">+</button></div>
           <button class="btn primary big" data-act="save-set">${ICON.check} Save set</button>
           ${today.length ? `<div class="done-sets">${today.map((x, i) => `<span>Set ${i + 1}: ${x.kg != null ? num(x.kg) + ' kg' : x.band ? BANDS[x.band] : 'BW'} × ${x.reps}</span>`).join('')}</div>` : ''}
-          ${m.home ? (canLater ? '<div class="taken"><button class="btn" data-act="ss-later">Do it later</button></div>' : '')
+          ${m.home ? (canLater ? '<div class="taken"><button class="btn" data-act="ss-later">Do it later</button></div>' : '') : grid ? ''
             : `<div class="taken">${canLater ? '<button class="btn" data-act="ss-later">Taken? Do it later</button>' : ''}<button class="btn" data-act="ss-pick">I used another machine</button></div>`}
           ${m.cues.length ? `<div class="sec"><h4>Technique</h4><ul class="cues">${m.cues.map(c => `<li>${h(c)}</li>`).join('')}</ul></div>` : ''}
           ${m.home ? '' : `<div class="sec"><h4>My settings</h4><input class="field" id="in-setting" data-ex="${exId}" value="${h(setting)}" placeholder="e.g. seat 4, pad 2" autocomplete="off"></div>`}
           ${m.home && alts.length > 1 ? `<div class="sec"><h4>Swap for</h4><div class="alts">${alts.map(a => `<button class="alt" data-alt="${a}" aria-pressed="${a === exId}">${h(M[a].name)}</button>`).join('')}</div></div>` : ''}
           <div class="sec links"><a href="${v.href}" target="_blank" rel="noopener">${ICON.ext} ${v.label}</a>
-            <button class="linkbtn" data-act="skip-set">Skip set</button>
-            ${S.sets.length ? '<button class="linkbtn" data-act="undo-set">Delete last set</button>' : ''}</div>
+            ${grid ? '' : '<button class="linkbtn" data-act="skip-set">Skip set</button>'}
+            ${(grid ? today : S.sets).length ? '<button class="linkbtn" data-act="undo-set">Delete last set</button>' : ''}</div>
         </div>
       </article>`;
   },
@@ -2125,6 +2218,7 @@ const SS = {
     else { const v = Math.max(0, (d.reps ?? rangeOf(exId)[1]) + dir); $('#in-reps').value = v; this.draft.reps = v; }
   },
   saveSet() {
+    if (this.grid) return this.saveSetGrid();
     const S = this.S, st = this.sched[S.step], exId = this.exFor(st.slot), m = M[exId], d = this.readDraft();
     if (!m.home && d.kg == null) return toast('Please enter a weight (0 for bodyweight).');
     if (!d.reps) return toast('Please enter your reps.');
@@ -2136,11 +2230,18 @@ const SS = {
     const rest = nx && nx.t === 'set' ? (nx.pair === st.pair && (nx.slot !== st.slot || st.pair === 'f') ? 45 : 75) : 0;
     this.go(j, rest);
   },
+  // Save after a change; a workout without sets leaves the list again.
+  persist() {
+    const S = this.S;
+    if (S.sets.length) return this.saveRemote();
+    Store.put('sessions/' + S.id, { date: S.date, plan: S.plan, place: S.place || 'gym', ...(S.studio ? { studio: S.studio } : {}), startedAt: S.startedAt, endedAt: S.endedAt, sets: [], subs: S.subs, test: S.test });
+    D.sessions = D.sessions.filter(s => s.id !== S.id);
+  },
   undoSet() {
+    if (this.grid) return this.undoGrid();
     const S = this.S, x = S.sets.pop(); if (!x) return;
     const i = this.sched.findIndex(s => s.t === 'set' && s.slot === x.slot && s.set === x.set);
-    if (S.sets.length) this.saveRemote();
-    else { Store.put('sessions/' + S.id, { date: S.date, plan: S.plan, place: S.place || 'gym', ...(S.studio ? { studio: S.studio } : {}), startedAt: S.startedAt, endedAt: S.endedAt, sets: [], subs: S.subs, test: S.test }); D.sessions = D.sessions.filter(s => s.id !== S.id); }
+    this.persist();
     this.go(i >= 0 ? i : S.step, 0);
     this.draft = { step: S.step, ex: x.ex, kg: x.kg, reps: x.reps, band: x.band || null }; this.render();
   },
@@ -2181,7 +2282,9 @@ const SS = {
   },
   // Keep a running rest after reordering; the same machine twice in a row gets at least 75 s.
   restLeft() {
-    const S = this.S, st = this.sched[S.step], last = S.sets[S.sets.length - 1];
+    const S = this.S;
+    if (this.grid) return Math.max(0, (S.restUntil - Date.now()) / 1000);
+    const st = this.sched[S.step], last = S.sets[S.sets.length - 1];
     let until = S.restUntil > Date.now() ? S.restUntil : 0;
     if (last && st && st.t === 'set' && st.slot === last.slot && st.pair !== 'f') until = Math.max(until, Date.parse(last.at) + 75000);
     return Math.max(0, (until - Date.now()) / 1000);
@@ -2195,11 +2298,122 @@ const SS = {
     return `<div class="waitbar"><div><b>Later: ${h(M[this.exFor(w.slot)].name)}</b><span>${plural(n, 'set', 'sets')} left · free now?</span></div>
       <button class="btn" data-now="${w.slot}">Do it now</button></div>`;
   },
-  afterCool(done) { if (done) { this.S.cooled = true; this.go(this.sched.length - 1, 0); } },
+  afterCool(done) { if (done) { this.S.cooled = true; this.grid ? this.goView('done') : this.go(this.sched.length - 1, 0); } },
   finishNow() {
     const S = this.S;
     if (!S.sets.length) { LS.set('cur', null); this.S = null; return this.close(); }
+    if (this.grid) return this.goView('done');
     this.go(this.sched.length - 1, 0);
+  },
+
+  // ---- Gym grid ----
+  goView(view, ex = null, rest = 0) {
+    const S = this.S; S.view = view; S.cur = ex;
+    if (view !== 'grid') this.pending = null;
+    S.restTotal = rest ? rest * 1000 : 0; S.restUntil = rest ? Date.now() + rest * 1000 : 0;
+    this.draft = null; this.lastRest = null;
+    this.saveLocal(); this.render(); window.scrollTo(0, 0); $('#session').scrollTop = 0;
+  },
+  // Tap on a tile, or a pick from the full list (a machine the studio doesn't list joins the grid for this workout).
+  pickMachine(id) {
+    const S = this.S; S.more = S.more || [];
+    if (!M[id] || M[id].home) return;
+    if (!GRID.model(S).tiles.some(t => t.id === id)) S.more.push(id);
+    this.goView('set', id, this.restLeft());
+  },
+  gridLabel(md, id) {
+    const t = md.tiles.find(x => x.id === id), g = h(G[M[id].g].name);
+    if (!t) return g;
+    const def = t.def && t.def !== id ? ` for ${h(M[t.def].name)}` : '';
+    return g + (t.rec ? (t.extra ? ' · extra today' : ' · planned today') + def : t.enough ? ' · enough of this colour today, extra' : ' · not planned today');
+  },
+  tile(t, clearing = false) {
+    const m = M[t.id], ph = Photos.of(t.id)[0], l = lastFor(t.id, this.S.id);
+    const last = l && l.sets.some(x => x.kg != null) ? kgFmt(Math.max(...l.sets.map(x => x.kg ?? 0))) : 'new';
+    const cls = ['tile', t.rec && 'rec', t.n && !t.full && 'busy', t.full && 'full', t.enough && !clearing && 'enough', clearing && 'clearing'].filter(Boolean).join(' ');
+    const pic = ph ? `<img src="${ph}" alt="">` : m.fig ? figSVG(m.fig, 1, false) : `<small>${h(m.de || '')}</small>`;
+    const pips = `<span class="pips" aria-hidden="true">${Array.from({ length: Math.max(t.of, t.n) }, (_, i) => `<i${i < t.n ? ' class="on"' : ''}></i>`).join('')}</span>`;
+    return `<button class="${cls}" data-tile="${t.id}" style="--gc:${t.c}" aria-label="${h(m.name)}, ${t.n} of ${t.of} sets${t.rec ? ', planned today' : t.enough ? ', enough of this colour today' : ''}">
+      <span class="tb"><span>${h(m.code)}</span>${t.full ? '<em>✓</em>' : t.extra ? '<em>extra</em>' : ''}</span>
+      <span class="ti">${pic}</span><span class="tn">${h(m.name)}</span>
+      <span class="tf"><span>${last}</span>${pips}</span></button>`;
+  },
+  vGrid(md) {
+    const S = this.S, p = this.pending, by = Object.fromEntries(md.tiles.map(t => [t.id, t]));
+    // During the Tetris moment the tiles that are about to sink still sit where they were.
+    const order = p ? [...p.order.filter(id => by[id]), ...md.tiles.map(t => t.id).filter(id => !p.order.includes(id))] : md.tiles.map(t => t.id);
+    const clearing = new Set(p ? p.cleared : []), tiles = order.map(id => by[id]);
+    const sunk = t => t.sunk && !clearing.has(t.id);
+    const top = tiles.filter(t => !sunk(t)), low = tiles.filter(sunk);
+    const chips = md.colors.map(x => `<span class="chip${x.d >= x.q ? ' ok' : ''}${p && p.pop.includes(x.c) ? ' pop' : ''}" style="--gc:${x.c}">${x.name} ${x.d >= x.q ? '✓' : `${x.d}/${x.q}`}</span>`).join('');
+    return `${this.restBanner('the next machine')}
+      <div class="gr-head"><div class="eyebrow">Today · Plan ${S.plan}${S.test ? ' · Test week' : ''}</div><div class="chips">${chips}</div>
+        <div class="sub">Outlined = planned today. 3 sets on one machine, then the next. Any machine of the same colour counts.</div></div>
+      <div class="grid" id="grid">${top.map(t => this.tile(t, clearing.has(t.id))).join('')}
+        ${low.length ? `<div class="tdiv">Done for today · tap one for an extra set</div>${low.map(t => this.tile(t)).join('')}` : ''}
+        <button class="tile other" data-act="gr-other">${ICON.camera}<span>Other machine</span></button></div>
+      <button class="btn primary big" data-act="gr-cool">Cool-down &amp; finish</button>`;
+  },
+  saveSetGrid() {
+    const S = this.S, exId = S.cur, d = this.readDraft();
+    if (d.kg == null) return toast('Please enter a weight (0 for bodyweight).');
+    if (!d.reps) return toast('Please enter your reps.');
+    const before = GRID.model(S);
+    S.sets.push({ ex: exId, kg: d.kg, reps: d.reps, at: new Date().toISOString(), set: (before.today[exId] || 0) + 1 });
+    this.saveRemote();
+    const after = GRID.model(S);
+    if (after.today[exId] < setsOf(exId)) return this.goView('set', exId, 75);
+    // Machine done: back to the grid, with the Tetris moment for everything that just sank.
+    const was = new Set(before.tiles.filter(t => t.sunk).map(t => t.id)), ok = new Set(before.colors.filter(x => x.d >= x.q).map(x => x.c));
+    const cleared = after.tiles.filter(t => t.sunk && !was.has(t.id)).map(t => t.id);
+    const pop = after.colors.filter(x => x.d >= x.q && !ok.has(x.c)).map(x => x.c);
+    this.pending = cleared.length ? { order: before.tiles.map(t => t.id), cleared, pop } : null;
+    if (pop.length) toast(pop.map(c => COLOR_NAME[c]).join(', ') + ': enough for today.');
+    this.goView('grid', null, 75);
+  },
+  undoGrid() {
+    const S = this.S, i = S.sets.map(x => x.ex).lastIndexOf(S.cur); if (i < 0) return;
+    const [x] = S.sets.splice(i, 1);
+    this.persist();
+    S.restUntil = 0; this.draft = null; this.saveLocal(); this.render();
+    if (this.draft) { this.draft.kg = x.kg; this.draft.reps = x.reps; $('#in-kg').value = x.kg; $('#in-reps').value = x.reps; }
+  },
+  // Tetris moment: the tiles that just sank flash, collapse, the rest slides up, and they reappear at the bottom.
+  async animateClear() {
+    const p = this.pending, grid = $('#grid');
+    const els = p.cleared.map(id => grid && grid.querySelector(`[data-tile="${id}"]`)).filter(Boolean);
+    const still = () => this.pending === p && this.active && this.S && this.S.view === 'grid';
+    if (els.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      els[0].scrollIntoView({ block: 'center' });
+      await wait(300);
+      if (!still()) return;
+      els.forEach(el => el.classList.add('flash'));
+      await wait(600);
+      if (!still()) return;
+      els.forEach(el => el.classList.replace('flash', 'gone'));
+      await wait(280);
+    }
+    if (!still()) return;
+    this.pending = null;
+    const before = this.rects();
+    this.render();
+    this.flip(before, p.cleared);
+  },
+  rects() { const r = {}; document.querySelectorAll('#grid [data-tile]').forEach(el => { r[el.dataset.tile] = el.getBoundingClientRect(); }); return r; },
+  flip(before, arriving) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const moves = [];
+    document.querySelectorAll('#grid [data-tile]').forEach(el => {
+      const id = el.dataset.tile;
+      if (arriving.includes(id)) { el.classList.add('arrive'); return; }
+      const b = before[id]; if (!b) return;
+      const a = el.getBoundingClientRect(), dx = b.left - a.left, dy = b.top - a.top;
+      if (!dx && !dy) return;
+      el.style.transition = 'none'; el.style.transform = `translate(${dx}px,${dy}px)`; moves.push(el);
+    });
+    if (!moves.length) return;
+    void document.body.offsetHeight;
+    moves.forEach(el => { el.style.transition = ''; el.style.transform = ''; });
   },
 };
 function closeOpenSession() {
@@ -2291,8 +2505,9 @@ const STD = {
 const PK = {
   slot: null, photo: null, url: null, qr: null, known: null, g: null,
   open() {
-    const st = SS.sched[SS.S.step]; if (!st || st.t !== 'set') return;
-    this.slot = st.slot; this.reset(); this.list();
+    if (SS.grid) this.slot = null;
+    else { const st = SS.sched[SS.S.step]; if (!st || st.t !== 'set') return; this.slot = st.slot; }
+    this.reset(); this.list();
     $('#pickdlg').showModal();
   },
   close() { const d = $('#pickdlg'); if (d.open) d.close(); },
@@ -2306,10 +2521,10 @@ const PK = {
   },
   // Only the machines this studio lists; the rest of FitInn's machines come up when you search.
   list() {
-    const S = SS.S, sid = S.studio, cur = SS.exFor(this.slot), def = slotDefault(S, this.slot), k = kindOf(def);
+    const S = SS.S, sid = S.studio, grid = SS.grid, cur = grid ? S.cur : SS.exFor(this.slot), def = grid ? null : slotDefault(S, this.slot), k = def && kindOf(def);
     const here = id => atStudio(id, sid), gym = id => M[id] && !M[id].home;
-    const top = [...new Set([def, cur, ...(ALT[def] || []), ...Object.keys(M).filter(id => gym(id) && k && kindOf(id) === k)])]
-      .filter(id => gym(id) && (here(id) || id === def || id === cur));
+    const top = def ? [...new Set([def, cur, ...(ALT[def] || []), ...Object.keys(M).filter(id => gym(id) && k && kindOf(id) === k)])]
+      .filter(id => gym(id) && (here(id) || id === def || id === cur)) : [];
     const ids = Object.keys(M).filter(id => gym(id) && !top.includes(id));
     const byCode = (a, b) => M[a].code.localeCompare(M[b].code, 'en', { numeric: true }) || M[a].name.localeCompare(M[b].name);
     const groups = Object.keys(G).map(g => [g, ids.filter(id => M[id].g === g && here(id)).sort(byCode)]).filter(([, l]) => l.length);
@@ -2317,11 +2532,11 @@ const PK = {
     const away = id => here(id) ? '' : 'Not listed at this studio';
     $('#pickdlg').innerHTML = `<div class="dlg-in">
       <div class="row between"><h2 class="h3" id="pk-title">Which machine?</h2><button class="icon-btn" data-act="pk-close" aria-label="Close">${ICON.close}</button></div>
-      <p class="sub">Planned: ${h(M[def].name)}. The sets you log now go to the machine you pick.</p>
+      <p class="sub">${def ? `Planned: ${h(M[def].name)}. The sets you log now go to the machine you pick.` : 'Search finds machines at other FitInn studios too. Not in the list: add it with a photo.'}</p>
       <button class="linkbtn" data-act="studio-open">${sid ? 'FitInn ' + h(studioName(sid)) : 'No studio picked'} · change studio</button>
       <input class="field" type="search" id="pk-q" placeholder="Search name or number" autocomplete="off" aria-label="Search machines">
       <div class="pk-list" id="pk-list">
-        <h4>Planned and similar</h4>${top.map(id => this.row(id, cur, away(id))).join('')}
+        ${top.length ? `<h4>Planned and similar</h4>${top.map(id => this.row(id, cur, away(id))).join('')}` : ''}
         ${groups.map(([g, l]) => `<h4>${G[g].name}</h4>${l.map(id => this.row(id, cur)).join('')}`).join('')}
         ${other.length ? `<h4 hidden>At other FitInn studios</h4>${other.map(id => this.row(id, cur, '', true)).join('')}` : ''}
         <p class="sub" id="pk-none" hidden>No machine matches. Add it with a photo below.</p>
@@ -2330,7 +2545,7 @@ const PK = {
     </div>`;
   },
   filter(q) { filterRows('#pk-list', q, '#pk-none'); },
-  pick(id) { this.close(); this.reset(); SS.sub(id); },
+  pick(id) { this.close(); this.reset(); SS.grid ? SS.pickMachine(id) : SS.sub(id); },
   form() {
     this.reset();
     $('#pickdlg').innerHTML = `<div class="dlg-in">
@@ -2731,7 +2946,10 @@ const ACT = {
   'ss-close': () => { if (SS.S && SS.S.endedAt) { SS.S = null; LS.set('cur', null); } SS.close(); },
   'ss-finish': () => SS.finishNow(),
   'warm-toggle': () => { const S = SS.S; if (S.warmEnd) { S.warmLeft = Math.max(0, S.warmEnd - Date.now()); S.warmEnd = 0; } else { S.warmEnd = Date.now() + (S.warmLeft || warmMs(S.place)); } SS.saveLocal(); SS.render(); },
-  'warm-done': () => { SS.S.warmEnd = 0; SS.go(1, 0); },
+  'warm-done': () => { SS.S.warmEnd = 0; SS.grid ? SS.goView('grid') : SS.go(1, 0); },
+  'gr-back': () => SS.goView('grid', null, SS.restLeft()),
+  'gr-other': () => PK.open(),
+  'gr-cool': () => SS.goView('cool'),
   'kg-': () => SS.bump('kg', -1), 'kg+': () => SS.bump('kg', 1),
   'reps-': () => SS.bump('reps', -1), 'reps+': () => SS.bump('reps', 1),
   'save-set': () => SS.saveSet(), 'undo-set': () => SS.undoSet(),
@@ -2746,7 +2964,7 @@ const ACT = {
   'extra-yes': () => { SS.S.skipExtra = false; SS.go(SS.S.step + 1, 0); },
   'extra-no': () => { SS.S.skipExtra = true; SS.go(SS.nextIdx(SS.S.step), 0); },
   'cool-start': () => { PL.open('cooloff', 'gym'); PL.start(); },
-  'cool-skip': () => SS.go(SS.S.step + 1, 0),
+  'cool-skip': () => SS.grid ? SS.goView('done') : SS.go(SS.S.step + 1, 0),
   'pv-close': () => PV.close(), 'pv-prev': () => PV.step(-1), 'pv-next': () => PV.step(1),
   'sync-open': () => openSyncDlg(),
   'sync-save': () => saveSyncCfg(),
@@ -2761,7 +2979,7 @@ const ACT = {
 };
 document.addEventListener('click', e => {
   if (e.target.id === 'pv-img') return PV.zoom(e);
-  const t = e.target.closest('[data-act],[data-play],[data-variant],[data-pull],[data-tab],[data-plan],[data-alt],[data-place],[data-band],[data-photo],[data-pick],[data-pkg],[data-now],[data-studio],[data-range],[data-grip]');
+  const t = e.target.closest('[data-act],[data-play],[data-variant],[data-pull],[data-tab],[data-plan],[data-alt],[data-place],[data-band],[data-photo],[data-pick],[data-pkg],[data-now],[data-studio],[data-range],[data-grip],[data-tile]');
   if (!t || t.disabled) return;
   const d = t.dataset;
   if (d.tab) return setTab(d.tab);
@@ -2777,6 +2995,7 @@ document.addEventListener('click', e => {
   if (d.pick) return PK.pick(d.pick);
   if (d.pkg) return PK.setG(d.pkg);
   if (d.now) return SS.now(d.now);
+  if (d.tile) return SS.pickMachine(d.tile);
   if (d.studio) return STD.pick(d.studio);
   if (d.range) { LS.set('statsRange', d.range); return renderStats(); }
   if (ACT[d.act]) ACT[d.act](t, e);
