@@ -84,6 +84,9 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 .tabbar svg{width:24px;height:24px}
 .tabbar button[aria-selected="true"]{color:var(--ink)}
 .tabbar button[aria-selected="true"] i{background:var(--accent-soft);color:var(--accent)}
+.kitrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
+.kitrow .seg button{font-size:16px;padding:0 10px}
+.kitrow>span{font-weight:700;font-size:15px;color:var(--muted)}
 .testbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:12px;padding:8px 12px;margin-bottom:12px;font-size:14px}
 .testbar b{font:700 17px/1 var(--display);text-transform:uppercase;letter-spacing:.05em}
 .testbar span{flex:1;min-width:160px;color:var(--muted)}
@@ -903,6 +906,63 @@ const EX = {
       { ...stand, n: -90, aR: { a: 94, b: -62 }, aL: { a: 92, b: -64 } },
     ],
   },
+  // No equipment (travel)
+  reach: {
+    cycle: 6, props: () => P.floor(),
+    frames: [
+      { view: 'front', hip: [120, 96], t: [-90, -90], n: -90, aR: { a: 260, b: 260 }, aL: { a: -80, b: -80 }, lR: { a: 94, b: 90 }, lL: { a: 86, b: 90 } },
+      { view: 'front', hip: [120, 93], t: [-90, -90], n: -90, aR: { a: 266, b: 266 }, aL: { a: -86, b: -86 }, lR: { a: 94, b: 90 }, lL: { a: 86, b: 90 } },
+    ],
+  },
+  hamhands: {
+    cycle: 6, side: 'R', props: () => P.floor(),
+    frames: [
+      { hip: [130, 175], t: [180, 180], n: 180, face: -90, aR: { to: 'kneeR', bend: 1 }, aL: { to: 'kneeR', bend: 1 }, lR: { a: -78, b: -70 }, lL: { a: 0, b: 0, f: -90 }, depth: [0, -2] },
+      { hip: [130, 175], t: [180, 180], n: 180, face: -90, aR: { to: 'kneeR', bend: 1 }, aL: { to: 'kneeR', bend: 1 }, lR: { a: -96, b: -96 }, lL: { a: 0, b: 0, f: -90 }, depth: [0, -2] },
+    ],
+  },
+  haende: {
+    cycle: 6, side: 'R', props: () => P.floor(),
+    frames: [
+      { view: 'back', hip: [120, 96], t: [-90, -90], n: -90, aR: { a: 70, b: -160 }, aL: { a: -100, b: 80 }, lR: { a: 88, b: 90 }, lL: { a: 92, b: 90 } },
+      { view: 'back', hip: [120, 96], t: [-90, -90], n: -90, aR: { a: 72, b: -146 }, aL: { a: -102, b: 72 }, lR: { a: 88, b: 90 }, lL: { a: 92, b: 90 } },
+    ],
+  },
+  quadwand: {
+    cycle: 6, side: 'R', props: () => P.post(166) + P.floor(),
+    frames: [
+      { hip: [120, 96], t: [-90, -90], aR: { to: 'ankleR', bend: -1 }, aL: { to: [164, 70] }, lR: { a: 95, b: -108 }, lL: { a: 90, b: 90 }, depth: [3, -1] },
+      { hip: [120, 96], t: [-92, -90], aR: { to: 'ankleR', bend: -1 }, aL: { to: [164, 70] }, lR: { a: 104, b: -100 }, lL: { a: 90, b: 90 }, depth: [3, -1] },
+    ],
+  },
+  bwsquat: {
+    cycle: 4, props: () => P.floor(),
+    frames: [
+      { hip: [118, 96], t: [-90, -90], n: -90, aR: { a: 0, b: 0 }, aL: { a: 2, b: 2 }, lR: { to: [121, 178], bend: -1 }, lL: { to: [124, 176], bend: -1 } },
+      { hip: [98, 132], t: [-58, -64], n: -70, aR: { a: -6, b: -6 }, aL: { a: -4, b: -4 }, lR: { to: [121, 178], bend: -1 }, lL: { to: [124, 176], bend: -1 } },
+    ],
+  },
+  doorrow: {
+    cycle: 4, props: () => P.post(150) + P.floor(),
+    frames: [
+      { hip: [119.5, 105.6], t: [-118, -118], n: -118, aR: { to: [146, 50] }, aL: { to: [148, 48] }, lR: { a: 62, b: 62, f: -30 }, lL: { a: 61, b: 61, f: -30 } },
+      { hip: [130.7, 100], t: [-108, -108], n: -100, aR: { to: [146, 50], bend: -1 }, aL: { to: [148, 48], bend: -1 }, lR: { a: 72, b: 72, f: -20 }, lL: { a: 71, b: 71, f: -20 } },
+    ],
+  },
+  ytraise: {
+    cycle: 4, props: () => P.floor(),
+    frames: [
+      { hip: [130, 172], t: [180, 180], n: 180, face: 90, aR: { a: 180, b: 180 }, aL: { a: 182, b: 182 }, lR: { a: 0, b: 0, f: 90 }, lL: { a: 2, b: 2, f: 90 }, depth: [0, -2] },
+      { hip: [130, 172], t: [188, 194], n: 196, face: 90, aR: { a: 200, b: 200 }, aL: { a: 202, b: 202 }, lR: { a: 0, b: 0, f: 90 }, lL: { a: 2, b: 2, f: 90 }, depth: [0, -2] },
+    ],
+  },
+  legraise: {
+    cycle: 4, props: () => P.floor(),
+    frames: [
+      { hip: [120, 172], t: [180, 180], n: 180, face: -90, aR: { a: 2, b: 0 }, aL: { a: 2, b: 0 }, lR: { a: -10, b: -10 }, lL: { a: -8, b: -8 }, depth: [0, -2] },
+      { hip: [120, 172], t: [180, 180], n: 180, face: -90, aR: { a: 2, b: 0 }, aL: { a: 2, b: 0 }, lR: { a: -88, b: -88 }, lL: { a: -86, b: -86 }, depth: [0, -2] },
+    ],
+  },
   htri: {
     // Seen from behind: the back foot holds one end, both hands the other behind the head.
     cycle: 3, props: () => P.floor(), over: sk => P.strap([sk.ankleL[0], FLOOR - 2], [(sk.handR[0] + sk.handL[0]) / 2, (sk.handR[1] + sk.handL[1]) / 2]),
@@ -1011,6 +1071,12 @@ const STR = {
   quadbosu: { name: 'Standing quad stretch', cue: 'Hold on to the Bosu or a wall. Heel to your glutes, knee points down, hips slightly forward.', q: 'standing quad stretch', sides: { L: 'Left leg', R: 'Right leg' } },
   latpfosten: { name: 'Lat stretch at a post', cue: 'Hold a post with both hands, push your hips back, head between your arms.', q: 'lat stretch holding post' },
   bwsstuhl: { name: 'Upper back over chair', cue: 'Hands behind your head. Extend back over the chair back, open your elbows, then return.', q: 'thoracic extension over chair' },
+  // No equipment (travel): stand-ins for the ones that need the bar, a band, a towel, the Bosu or a post.
+  reach: { name: 'Overhead reach', cue: 'Stand tall, arms straight overhead, shoulder-width. Reach for the ceiling as if hanging, let your ribs and lats lengthen, breathe calmly.', q: 'standing overhead reach lat stretch' },
+  hamhands: { name: 'Hamstring, hands behind the thigh', cue: 'Lie on your back, hold the back of one thigh with both hands. Pull the leg up as straight as you can; the other leg stays long on the floor.', q: 'lying hamstring stretch hands behind thigh', sides: { L: 'Left leg', R: 'Right leg' } },
+  haende: { name: 'Hands behind the back', cue: 'One hand over the shoulder from above, the other from below. Walk your fingers toward each other; can’t reach yet? Hold a T-shirt in between.', q: 'shoulder stretch hands behind back reach', fig: 'haende', sides: { L: 'Left hand low', R: 'Right hand low' } },
+  quadwand: { name: 'Standing quad stretch', cue: 'Hold on to a wall. Heel to your glutes, knee points down, hips slightly forward.', q: 'standing quad stretch', sides: { L: 'Left leg', R: 'Right leg' } },
+  lattuer: { name: 'Lat stretch at a door frame', cue: 'Hold the door frame with both hands, push your hips back, head between your arms.', q: 'lat stretch door frame', fig: 'latpfosten' },
   kinn: { name: 'Chin tuck', cue: 'Slide your head straight back (double chin), hold 2 seconds, release. Keep looking straight ahead.', q: 'chin tuck exercise' },
 };
 // sides: [left, right] in seconds, left first.
@@ -1033,6 +1099,10 @@ const SEQ = {
     { ex: 'bwsstuhl', dur: 30, reps: 5 }, { ex: 'nacken', sides: [20, 30] }, { ex: 'kinn', dur: 24, reps: 8 }, { ex: 'brustoeffner', dur: 20 },
   ] },
 };
+// Travel mode: no equipment at all. One setting on this device for stretching and home workouts.
+const KIT_NONE_STR = { hang: 'reach', hamstring: 'hamhands', handtuch: 'haende', quadbosu: 'quadwand', latpfosten: 'lattuer' };
+const kitNow = () => LS.get('kit', 'full');
+const seqOf = id => kitNow() !== 'none' ? SEQ[id] : { ...SEQ[id], steps: SEQ[id].steps.map(st => KIT_NONE_STR[st.ex] ? { ...st, ex: KIT_NONE_STR[st.ex] } : st) };
 const figOf = ex => STR[ex].fig || ex;
 const sideLabel = p => (STR[p.ex].sides || {})[p.side] || (p.side === 'L' ? 'Left' : 'Right');
 function buildPhases(seq) {
@@ -1043,7 +1113,7 @@ function buildPhases(seq) {
   });
   return out;
 }
-const seqSeconds = id => buildPhases(SEQ[id]).reduce((s, p) => s + p.dur + p.prep, 0);
+const seqSeconds = id => buildPhases(seqOf(id)).reduce((s, p) => s + p.dur + p.prep, 0);
 function stepDur(st) {
   if (st.sides) return `L ${st.sides[0]} s · R ${st.sides[1]} s` + (st.reps ? ` · ${st.reps}×` : '');
   return `${st.dur} s` + (st.reps ? ` · ${st.reps}×` : '');
@@ -1103,6 +1173,11 @@ const M = {
   kneeraise: { g: 'bauch', code: 'Bar', name: 'Hanging knee raise', home: true, load: 'bw', fig: 'kneeraise', q: 'hanging knee raise', range: [8, 15], up: 'Last time 15 in every set: try straighter legs today.', cues: ['Hang from the medium grip', 'Pull your knees toward your chest and roll the pelvis up', 'Lower slowly, no swinging'] },
   deadbug: { g: 'bauch', code: 'Floor', name: 'Dead bug', home: true, load: 'bw', per: 'side', fig: 'deadbug', q: 'dead bug exercise', range: [8, 12], up: 'Last time 12 in every set: hold every rep 2 s at full reach today.', cues: ['On your back, arms up, knees bent 90°', 'Press your lower back into the floor', 'Reach out slowly with the opposite arm and leg, then switch'] },
   hcurl: { g: 'arme', code: 'Band', name: 'Band biceps curl', home: true, load: 'band', fig: 'hcurl', q: 'resistance band bicep curl', range: [12, 15], cues: ['Stand on the middle of the band, ends wrapped around your hands', 'Palms forward, elbows stay at your sides', 'Curl up, lower slowly'] },
+  // No equipment (travel): floor, a wall, a door frame, a chair or the bed.
+  bwsquat: { g: 'beine', code: 'Floor', name: 'Tempo squat', home: true, load: 'bw', fig: 'bwsquat', q: 'bodyweight tempo squat', range: [15, 25], up: 'Last time 25 in every set: pause 2 s at the bottom today.', cues: ['Feet shoulder-width, arms forward for balance', '3 s down, sit back and down, knees over the toes', 'Stand up fully and squeeze your glutes'] },
+  doorrow: { g: 'ruecken', code: 'Door frame', name: 'Door-frame row', home: true, load: 'bw', fig: 'doorrow', q: 'door frame row bodyweight', range: [10, 15], up: 'Last time 15 in every set: feet closer to the frame today.', cues: ['Face an open door, feet close to the frame, hold both sides at chest height', 'Lean back with straight arms, body in one line', 'Pull your chest to the frame, elbows close, squeeze the shoulder blades', 'Lower slowly. Harder: feet closer to the frame'] },
+  ytraise: { g: 'ruecken', code: 'Floor', name: 'Lying Y-raise', home: true, load: 'bw', fig: 'ytraise', q: 'prone y raise', range: [10, 15], up: 'Last time 15 in every set: hold every rep 2 s at the top today.', cues: ['Face down, arms overhead in a Y, thumbs up', 'Lift arms and chest a little, shoulder blades down and back', 'Look at the floor, neck long', 'Lower slowly'] },
+  legraise: { g: 'bauch', code: 'Floor', name: 'Lying leg raise', home: true, load: 'bw', fig: 'legraise', q: 'lying leg raise form', range: [8, 15], up: 'Last time 15 in every set: lower in 3 s today.', cues: ['On your back, hands flat next to your hips', 'Press your lower back into the floor', 'Raise straight legs to vertical, lower slowly without touching the floor'] },
   htri: { g: 'arme', code: 'Band', name: 'Band overhead triceps extension', home: true, load: 'band', fig: 'htri', q: 'resistance band overhead tricep extension', range: [12, 15], cues: ['Split stance, the back foot stands on one end', 'Both hands hold the other end behind your head, elbows up', 'Straighten your arms overhead, lower slowly', 'Elbows stay close to your head'] },
 };
 // Legs get one extra machine per plan and the calf raise as the extra (Vicoach 2026-11: arms above the norm, legs behind).
@@ -1125,10 +1200,13 @@ const HOME = {
 };
 // Home extra = the other plan's leg pair (legs lag behind, arms are above the norm: Vicoach 2026-11).
 const HEXTRA = { A: ['split', 'rdl1'], B: ['hsquat', 'bridge'] };
+// Travel mode (no equipment): each exercise that needs a band or the bar gets a stand-in.
+const KIT_NONE = { hsquat: 'bwsquat', puwide: 'doorrow', pumed: 'doorrow', punar: 'doorrow', hrow: 'ytraise', pullapart: 'ytraise', pulldown: 'ytraise', hpress: 'pike', kneeraise: 'legraise', hcurl: 'doorrow', htri: 'pike' };
+const kitEx = (id, kit) => kit === 'none' && KIT_NONE[id] || id;
 const ALT = { bei3a: ['bei3d'], bei3d: ['bei3a'], rue4b: ['latkabel'], bru2b: ['bru1a', 'bru5'], rue1f: ['mulrow'], bau4a: ['bau4b', 'bau2'],
   bru6: ['latkabel'], bru4b: ['sch1b', 'bru3b'], rue3: ['mulface'], bau6: ['bau4b', 'bau2'], a3a: ['multri'],
   hsquat: ['split'], split: ['hsquat'], rdl1: ['bridge'], bridge: ['rdl1'], puwide: ['pumed', 'punar'], punar: ['pumed', 'puwide'],
-  hrow: ['pulldown'], pullapart: ['pulldown'], hpress: ['pike'], kneeraise: ['deadbug'], deadbug: ['kneeraise'] };
+  hrow: ['pulldown'], pullapart: ['pulldown'], bwsquat: ['split'], doorrow: ['ytraise'], ytraise: ['doorrow'], legraise: ['deadbug'], pike: ['pushup'], hpress: ['pike'], kneeraise: ['deadbug'], deadbug: ['kneeraise'] };
 const BANDS = { L: 'Light', M: 'Medium', S: 'Strong', SL: 'Strong + light', SM: 'Strong + medium' };
 const BAND_KEYS = Object.keys(BANDS);
 const topBand = sets => sets.reduce((b, x) => x.band && BAND_KEYS.indexOf(x.band) > BAND_KEYS.indexOf(b) ? x.band : b, null);
@@ -1552,7 +1630,7 @@ function exList(seq) {
   }).join('')}</ul>`;
 }
 function renderDehnen() {
-  const v = morgenVariant(), id = 'morgen' + v, seq = SEQ[id], day = dayDoc();
+  const v = morgenVariant(), id = 'morgen' + v, seq = seqOf(id), day = dayDoc();
   const done = didMorgen(TODAY());
   const desk = doneStretches(TODAY(), s => s === 'schreibtisch').length;
   const cool = doneStretches(TODAY(), s => s === 'cooloff').length > 0;
@@ -1570,7 +1648,7 @@ function renderDehnen() {
       <div class="thumb">${figSVG(fig, 1, false)}</div>
       <button class="btn" data-play="${sid}">${ICON.play} Start</button>
     </section>`;
-  $('#tab-dehnen').innerHTML = `
+  $('#tab-dehnen').innerHTML = `${kitSeg()}
     <section class="card">
       <div class="row between top">
         <div>
@@ -1673,7 +1751,7 @@ const PL = {
   id: null, from: null, ph: [], i: 0, stage: 'ready', left: 0, dur: 0, el: 0, running: false, active: false,
   t0: 0, timer: 0, raf: 0, lastSec: null, startedAt: 0, cache: {},
   open(id, from) {
-    this.id = id; this.from = from || null; this.ph = buildPhases(SEQ[id]);
+    this.id = id; this.from = from || null; this.ph = buildPhases(seqOf(id));
     this.i = 0; this.stage = 'ready'; this.running = false; this.el = 0; this.cache = {}; this.startedAt = 0;
     $('#pl').classList.remove('is-done');
     $('#pl-seq').textContent = SEQ[id].title;
@@ -1841,8 +1919,8 @@ const setsText = sets => {
 };
 function slotDefault(S, slot) {
   if (slot === 'f') return 'bosu';
-  if (slot[0] === 'x') return extrasOf(S.place, S.plan)[+slot[1]];
-  return plansOf(S.place)[S.plan].pairs[+slot[1]][+slot[2]];
+  if (slot[0] === 'x') return kitEx(extrasOf(S.place, S.plan)[+slot[1]], S.kit);
+  return kitEx(plansOf(S.place)[S.plan].pairs[+slot[1]][+slot[2]], S.kit);
 }
 function mrow(id, extra = '') {
   const m = M[id], l = lastFor(id);
@@ -1852,6 +1930,8 @@ function mrow(id, extra = '') {
   const lead = m.fig && m.home ? `<span class="mini">${figSVG(m.fig, 1, false)}</span>` : `<span class="dot" style="--gc:${G[m.g].c}"></span>`;
   return `<div class="mrow">${lead}<span>${h(m.name)}${extra}</span><span class="kg">${last}</span></div>`;
 }
+// Equipment setting, shared by the Daily tab and home workouts: "None" swaps every exercise that needs the bar, a band, a towel or the Bosu.
+const kitSeg = () => `<div class="kitrow"><span>Equipment</span><div class="seg" role="group" aria-label="Equipment">${[['full', 'Home kit'], ['none', 'None · travel']].map(([k, t]) => `<button data-kit="${k}" aria-pressed="${k === kitNow()}">${t}</button>`).join('')}</div></div>`;
 function renderGym() {
   const cur = LS.get('cur', null);
   const resumable = !!(cur && !cur.endedAt && Date.now() - Date.parse(cur.startedAt) < 8 * 3600e3);
@@ -1869,8 +1949,9 @@ function renderGym() {
   const p = plansOf(pl)[plan];
   // At another studio, machines it doesn't have show with their stand-in.
   const sid = home ? null : resumable ? cur.studio || null : curStudio(), today = LS.get('studioToday', null);
+  const kit = resumable ? cur.kit || 'full' : kitNow(), bare = home && kit === 'none';
   const slotRow = (id, slot) => {
-    const s = home ? id : resumable ? (cur.subs || {})[slot] || id : swapFor(id, sid);
+    const s = home ? kitEx(id, kit) : resumable ? (cur.subs || {})[slot] || id : swapFor(id, sid);
     return mrow(s, s !== id ? ` <span class="for">for ${h(M[id].name)}</span>` : atStudio(id, sid) ? '' : ' <span class="for">not at this studio</span>');
   };
   const studioRow = home || resumable ? '' : `<button class="studio" data-act="studio-open" aria-haspopup="dialog">${ICON.pin}<span>${sid
@@ -1886,7 +1967,12 @@ function renderGym() {
     return `<details class="hist"><summary><span>${fmtDate(s.date)} · ${h(planName(s))}${s.test ? ' · Test' : ''}${s.studio && s.studio !== usualStudio() ? ' · ' + h(studioName(s.studio)) : ''}</span><span>${mins ? mins + ' min · ' : ''}${plural(s.sets.length, 'set', 'sets')}</span></summary>
       <ul>${Object.entries(by).map(([ex, sets]) => `<li><b>${h(M[ex]?.name || ex)}</b> ${setsText(sets)}</li>`).join('')}</ul></details>`;
   }).join('');
-  const rules = home ? [
+  const rules = bare ? [
+    '3 sets each, alternate the pair, 45 s rest in between.',
+    'No equipment: floor, a wall, a door frame, a chair or the bed.',
+    'Hit the top of the range in every set, then make it harder: slower (3 s down), a pause at the hardest point, or the harder variation in the tips.',
+    'Door-frame row: check the frame is solid and hold it firmly. The closer your feet to the frame, the harder.',
+  ] : home ? [
     '3 sets each, alternate the pair, 45 s rest in between.',
     'Band exercises: hit the top of the range in every set, then take the next band: light → medium → strong → strong + light → strong + medium (hold both bands together as one).',
     'Still too easy: grip the band shorter, wrap more of it around your hands.',
@@ -1902,6 +1988,7 @@ function renderGym() {
   $('#tab-gym').innerHTML = `
     ${resumable ? '' : `<div class="seg wide" role="group" aria-label="Where">${[['gym', 'Gym'], ['home', 'Home']].map(([k, t]) => `<button data-place="${k}" aria-pressed="${k === pl}">${t}</button>`).join('')}</div>`}
     ${studioRow}
+    ${home && !resumable ? kitSeg() : ''}
     <div class="stats">
       <div class="stat"><b>${wkCount}/3</b><span>Workouts this week</span></div>
       <button class="stat${walkDay ? ' on' : ''}" data-act="walk"><b>${walkDay ? '✓' : '+'}</b><span>${walkDay ? 'Walk ' + (walkDay === TODAY() ? 'today' : WD[parseKey(walkDay).getDay()]) : 'Walk 30–40 min'}</span></button>
@@ -1913,7 +2000,7 @@ function renderGym() {
         <div>
           <div class="eyebrow">${resumable ? 'In progress' : home ? 'Next home workout' : 'Next workout'}</div>
           <h2 class="h2">${home ? 'Home' : 'Plan'} ${plan}</h2>
-          <div class="sub">${home ? 'Full body · bands, floor, bar · about 30 min' : 'Full body · one machine at a time · about 45 min'}</div>
+          <div class="sub">${bare ? 'Full body · no equipment · about 30 min' : home ? 'Full body · bands, floor, bar · about 30 min' : 'Full body · one machine at a time · about 45 min'}</div>
         </div>
         ${resumable ? '' : `<div class="seg" role="group" aria-label="Plan">${['A', 'B'].map(x => `<button data-plan="${x}" aria-pressed="${x === plan}">${x}</button>`).join('')}</div>`}
       </div>
@@ -1961,6 +2048,7 @@ const SS = {
     const date = TODAY(), grid = pl !== 'home';
     this.S = { id: `${date}-${pl === 'home' ? 'home' : ''}${plan}-${Math.random().toString(36).slice(2, 7)}`, date, plan, place: pl, startedAt: new Date().toISOString(), endedAt: null,
       sets: [], subs: {}, auto: {}, studio: pl === 'home' ? null : curStudio(), test: pl !== 'home' && gymLogged().length < 3, step: 0, skipExtra: false, restUntil: 0, restTotal: 0, warmEnd: 0, warmLeft: warmMs(pl), cooled: false,
+      ...(!grid && kitNow() === 'none' ? { kit: 'none' } : {}),
       ...(grid ? { grid: true, view: 'warm', cur: null, more: [], cardioI: nextCardio(), cardio: CARDIO_CYCLE[nextCardio()] } : { q: clone(SCHED_HOME) }) };
     this.pending = null;
     this.saveLocal(); this.open();
@@ -2005,7 +2093,7 @@ const SS = {
   saveLocal() { LS.set('cur', this.S); },
   saveRemote() {
     const S = this.S; if (!S.sets.length) return;
-    const doc = { date: S.date, plan: S.plan, place: S.place || 'gym', ...(S.studio ? { studio: S.studio } : {}), startedAt: S.startedAt, endedAt: S.endedAt, sets: S.sets, subs: S.subs, test: S.test, cooled: !!S.cooled, skipExtra: !!S.skipExtra, ...(S.cardio ? { cardio: S.cardio, cardioI: S.cardioI } : {}) };
+    const doc = { date: S.date, plan: S.plan, place: S.place || 'gym', ...(S.studio ? { studio: S.studio } : {}), startedAt: S.startedAt, endedAt: S.endedAt, sets: S.sets, subs: S.subs, test: S.test, cooled: !!S.cooled, skipExtra: !!S.skipExtra, ...(S.kit ? { kit: S.kit } : {}), ...(S.cardio ? { cardio: S.cardio, cardioI: S.cardioI } : {}) };
     Store.put('sessions/' + S.id, doc);
     upsertSession({ ...clone(doc), id: S.id });
   },
@@ -2067,7 +2155,10 @@ const SS = {
   vWarm() {
     const S = this.S, running = !!S.warmEnd, left = running ? S.warmEnd - Date.now() : S.warmLeft;
     const first = M[this.grid ? recsFor(S.plan, S.studio)[0].id : this.exFor('p00')];
-    const intro = S.place === 'home'
+    const intro = S.place === 'home' && S.kit === 'none'
+      ? `<h2 class="h2">5 minutes</h2>
+        <ul class="cues"><li>1 min marching on the spot or jumping jacks</li><li>10 arm circles each way</li><li>10 slow bodyweight squats</li><li>10 lying Y-raises, slow</li><li>2 × 20 s arms overhead, reach for the ceiling</li></ul>`
+      : S.place === 'home'
       ? `<h2 class="h2">5 minutes</h2>
         <ul class="cues"><li>1 min marching on the spot or jumping jacks</li><li>10 arm circles each way</li><li>10 slow bodyweight squats</li><li>10 band pull-aparts, light band</li><li>2 × 20 s dead hang</li></ul>`
       : (c => `<div class="seg wide" role="group" aria-label="Machine">${Object.entries(CARDIO).map(([k, x]) => `<button data-cardio="${k}" aria-pressed="${k === c}">${x.name}</button>`).join('')}</div>
@@ -2105,7 +2196,7 @@ const SS = {
   },
   // Home: progress band by band; bodyweight-only moves get a harder variation instead.
   suggestHome(exId, setNo) {
-    const S = this.S, r = rangeOf(exId), m = M[exId], bands = m.load !== 'bw';
+    const S = this.S, r = rangeOf(exId), m = M[exId], bare = S.kit === 'none', bands = m.load !== 'bw' && !bare;
     const today = S.sets.filter(x => x.ex === exId), last = lastFor(exId, S.id);
     let band = null, reps, hint = '', tone = '';
     if (today.length) {
@@ -2123,7 +2214,7 @@ const SS = {
       band = m.load === 'band' ? (m.start || 'M') : null; reps = r[1];
       hint = m.load === 'band' ? `New: pick the band that gives you ${r[0]}–${r[1]} clean reps with 2 in reserve.` : `New: aim for ${r[0]}–${r[1]} clean reps, stop with 1–2 left in the tank.`;
     }
-    return { band, reps, hint, tone, last };
+    return { band: bare ? null : band, reps, hint, tone, last };
   },
   setBand(k) {
     if (!this.draft) return;
@@ -2138,14 +2229,15 @@ const SS = {
     const setNo = grid ? today.length + 1 : st.set, key = grid ? today.length : S.step;
     const sg = m.home ? this.suggestHome(exId, setNo) : this.suggest(exId, setNo);
     if (!this.draft || this.draft.step !== key || this.draft.ex !== exId) this.draft = { step: key, ex: exId, kg: sg.kg, reps: sg.reps, band: sg.band };
-    const def = grid ? exId : slotDefault(S, st.slot), alts = [def, ...(ALT[def] || [])];
+    const def = grid ? exId : slotDefault(S, st.slot), alts = [def, ...(ALT[def] || [])].filter(a => S.kit !== 'none' || !KIT_NONE[a]);
+    const cues = S.kit === 'none' ? m.cues.filter(c => !/\bband\b/i.test(c)) : m.cues;
     const bandKeys = m.load === 'bwband' ? ['0', ...BAND_KEYS] : BAND_KEYS;
     const load = !m.home
       ? `<div class="stepper"><label for="in-kg">Weight</label>
             <button data-act="kg-" aria-label="Less weight">−</button>
             <input id="in-kg" type="number" inputmode="decimal" step="0.5" min="0" value="${h(this.draft.kg)}" placeholder="kg" aria-label="Weight in kg">
             <button data-act="kg+" aria-label="More weight">+</button></div>`
-      : m.load === 'bw' ? ''
+      : m.load === 'bw' || S.kit === 'none' ? ''
       : `<div class="bands"><span class="lbl" id="band-lbl">Band</span><div class="alts" role="group" aria-labelledby="band-lbl">${bandKeys.map(k => `<button class="alt" data-band="${k}" aria-pressed="${(this.draft.band || '0') === k}">${k === '0' ? 'No band' : BANDS[k]}</button>`).join('')}</div></div>`;
     // Alternating only while the partner's sets are right next to this one (not after "do it later").
     const pslot = !grid && (st.pair[0] === 'p' || st.pair === 'x') ? st.slot.slice(0, -1) + (st.slot.endsWith('0') ? '1' : '0') : null;
@@ -2176,7 +2268,7 @@ const SS = {
           ${today.length ? `<div class="done-sets">${today.map((x, i) => `<span>Set ${i + 1}: ${x.kg != null ? num(x.kg) + ' kg' : x.band ? BANDS[x.band] : 'BW'} × ${x.reps}</span>`).join('')}</div>` : ''}
           ${m.home ? (canLater ? '<div class="taken"><button class="btn" data-act="ss-later">Do it later</button></div>' : '') : grid ? ''
             : `<div class="taken">${canLater ? '<button class="btn" data-act="ss-later">Taken? Do it later</button>' : ''}<button class="btn" data-act="ss-pick">I used another machine</button></div>`}
-          ${m.cues.length ? `<div class="sec"><h4>Technique</h4><ul class="cues">${m.cues.map(c => `<li>${h(c)}</li>`).join('')}</ul></div>` : ''}
+          ${cues.length ? `<div class="sec"><h4>Technique</h4><ul class="cues">${cues.map(c => `<li>${h(c)}</li>`).join('')}</ul></div>` : ''}
           ${m.home ? '' : `<div class="sec"><h4>My settings</h4><input class="field" id="in-setting" data-ex="${exId}" value="${h(setting)}" placeholder="e.g. seat 4, pad 2" autocomplete="off"></div>`}
           ${m.home && alts.length > 1 ? `<div class="sec"><h4>Swap for</h4><div class="alts">${alts.map(a => `<button class="alt" data-alt="${a}" aria-pressed="${a === exId}">${h(M[a].name)}</button>`).join('')}</div></div>` : ''}
           <div class="sec links"><a href="${v.href}" target="_blank" rel="noopener">${ICON.ext} ${v.label}</a>
@@ -2199,7 +2291,7 @@ const SS = {
     return `${this.waiting()}<section class="card">
       <div class="eyebrow">To finish</div><h2 class="h2">Cool-down</h2>
       <div class="sub">${fmtMin(seqSeconds('cooloff'))} · legs, lats, chest, hips</div>
-      <div class="thumbs">${[...new Set(SEQ.cooloff.steps.map(s => s.ex))].map(x => `<div class="thumb">${figSVG(figOf(x), 1, false)}</div>`).join('')}</div>
+      <div class="thumbs">${[...new Set(seqOf('cooloff').steps.map(s => s.ex))].map(x => `<div class="thumb">${figSVG(figOf(x), 1, false)}</div>`).join('')}</div>
       <button class="btn primary big" data-act="cool-start">${ICON.play} Start cool-down</button>
       <button class="btn block" data-act="cool-skip">Skip</button>
     </section>`;
@@ -2247,7 +2339,7 @@ const SS = {
   persist() {
     const S = this.S;
     if (S.sets.length) return this.saveRemote();
-    Store.put('sessions/' + S.id, { date: S.date, plan: S.plan, place: S.place || 'gym', ...(S.studio ? { studio: S.studio } : {}), startedAt: S.startedAt, endedAt: S.endedAt, sets: [], subs: S.subs, test: S.test });
+    Store.put('sessions/' + S.id, { date: S.date, plan: S.plan, place: S.place || 'gym', ...(S.studio ? { studio: S.studio } : {}), startedAt: S.startedAt, endedAt: S.endedAt, sets: [], subs: S.subs, test: S.test, ...(S.kit ? { kit: S.kit } : {}) });
     D.sessions = D.sessions.filter(s => s.id !== S.id);
   },
   undoSet() {
@@ -2433,7 +2525,7 @@ function closeOpenSession() {
   const c = LS.get('cur', null);
   if (c && c.sets.length && !c.endedAt) {
     c.endedAt = c.sets[c.sets.length - 1].at;
-    const doc = { date: c.date, plan: c.plan, place: c.place || 'gym', ...(c.studio ? { studio: c.studio } : {}), startedAt: c.startedAt, endedAt: c.endedAt, sets: c.sets, subs: c.subs, test: c.test, cooled: !!c.cooled, skipExtra: !!c.skipExtra };
+    const doc = { date: c.date, plan: c.plan, place: c.place || 'gym', ...(c.studio ? { studio: c.studio } : {}), startedAt: c.startedAt, endedAt: c.endedAt, sets: c.sets, subs: c.subs, test: c.test, cooled: !!c.cooled, skipExtra: !!c.skipExtra, ...(c.kit ? { kit: c.kit } : {}) };
     Store.put('sessions/' + c.id, doc); upsertSession({ ...clone(doc), id: c.id });
   }
   LS.set('cur', null);
@@ -2992,7 +3084,7 @@ const ACT = {
 };
 document.addEventListener('click', e => {
   if (e.target.id === 'pv-img') return PV.zoom(e);
-  const t = e.target.closest('[data-act],[data-play],[data-variant],[data-pull],[data-tab],[data-plan],[data-alt],[data-place],[data-band],[data-photo],[data-pick],[data-pkg],[data-now],[data-studio],[data-range],[data-grip],[data-tile],[data-cardio]');
+  const t = e.target.closest('[data-act],[data-play],[data-variant],[data-pull],[data-tab],[data-plan],[data-alt],[data-place],[data-band],[data-photo],[data-pick],[data-pkg],[data-now],[data-studio],[data-range],[data-grip],[data-tile],[data-cardio],[data-kit]');
   if (!t || t.disabled) return;
   const d = t.dataset;
   if (d.tab) return setTab(d.tab);
@@ -3000,6 +3092,7 @@ document.addEventListener('click', e => {
   if (d.band) return SS.setBand(d.band === '0' ? null : d.band);
   if (d.photo) return PV.open(d.photo);
   if (d.play) { PL.open(d.play); PL.start(); return; }
+  if (d.kit) { LS.set('kit', d.kit); return tab === 'gym' ? renderGym() : renderDehnen(); }
   if (d.variant) { LS.set('morgenOverride', { date: TODAY(), v: d.variant }); return renderDehnen(); }
   if (d.pull) return pull(d.pull);
   if (d.grip) { LS.set('pullGrip', d.grip); return renderDehnen(); }
