@@ -294,7 +294,7 @@ button.stat.on b{color:var(--accent)}
 .hint.down{background:var(--warn-soft)}
 .stepper{display:grid;grid-template-columns:72px 54px 1fr 54px;align-items:center;gap:8px;margin-top:12px}
 .stepper label{font-weight:700;font-size:15px}
-.stepper button{height:54px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font:700 28px/1 var(--display);cursor:pointer;padding:0}
+.stepper button{touch-action:manipulation;-webkit-user-select:none;user-select:none;height:54px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font:700 28px/1 var(--display);cursor:pointer;padding:0}
 .stepper input{height:54px;width:100%;min-width:0;text-align:center;border:1px solid var(--line);border-radius:12px;background:var(--surface);font:700 30px/1 var(--display);font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield}
 .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .done-sets{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
@@ -303,6 +303,7 @@ button.stat.on b{color:var(--accent)}
 .sec h4{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
 .cues{margin:0;padding-left:18px;font-size:15px}
 .cues li+li{margin-top:3px}
+textarea.field{display:block;resize:vertical;font-family:inherit;line-height:1.35}
 .field{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);padding:10px 12px;font-size:16px}
 .alts{display:flex;gap:6px;flex-wrap:wrap}
 .alt{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:14px;cursor:pointer;min-height:36px}
@@ -320,6 +321,12 @@ button.stat.on b{color:var(--accent)}
 .ss-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start}
 .ss-photos:empty{display:none}
 .pthumb{position:relative;display:block;width:68px;height:90px;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface2);cursor:zoom-in}
+.pthumb.padd{border:2px dashed var(--line);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);text-align:center;padding:4px}
+.pthumb.padd svg{width:24px;height:24px}
+.pthumb.padd small{font-size:11px;line-height:1.2;font-weight:700}
+.pthumb.padd input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.pthumb.padd:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.pthumb.padd.busy{opacity:.6;pointer-events:none}
 .pthumb img{width:100%;height:100%;object-fit:cover;display:block}
 .pthumb span{position:absolute;right:4px;bottom:4px;min-width:20px;height:20px;border-radius:10px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;padding:0 5px}
 .taken{display:flex;gap:8px;margin-top:10px}
@@ -596,6 +603,7 @@ function limb(root, spec, l1, l2, sk) {
   const k = spec.k ?? 1;
   if (spec.to) {
     let T = typeof spec.to === 'string' ? sk[spec.to] : spec.to;
+    if (typeof T[0] === 'string') { const [a, b] = [sk[T[0]], sk[T[1]]]; T = [a[0] + (b[0] - a[0]) * T[2], a[1] + (b[1] - a[1]) * T[2]]; } // a point along a bone
     if (spec.dx) T = [T[0] + spec.dx[0], T[1] + spec.dx[1]];
     const j = ik(root, T, l1 * (spec.ka ?? k), l2 * (spec.kb ?? k), spec.bend ?? 1);
     return { j, e: pt(j, ang(j, T), l2 * (spec.kb ?? k)) };
@@ -758,7 +766,7 @@ const EX = {
     cycle: 6, side: 'L', props: () => P.mat(),
     frames: [
       { view: 'top', hip: [104, 108], t: [0, 0], tk: 0.14, n: 0, nk: 0.15, face: 0, aR: { to: [94, 130], k: 0.45 }, aL: { to: [94, 86], k: 0.45, bend: -1 }, lL: { a: 0, b: 90 }, lR: { a: 90, b: 180 } },
-      { view: 'top', hip: [104, 108], t: [8, 8], tk: 0.62, n: 8, nk: 0.5, face: 8, aR: { to: [148, 128], k: 0.55 }, aL: { to: [150, 96], k: 0.55, bend: -1 }, lL: { a: 0, b: 90 }, lR: { a: 90, b: 180 } },
+      { view: 'top', hip: [104, 108], t: [20, 20], tk: 0.62, n: 20, nk: 0.5, face: 20, aR: { to: [160, 134], k: 0.55 }, aL: { to: [162, 104], k: 0.55, bend: -1 }, lL: { a: 0, b: 90 }, lR: { a: 90, b: 180 } },
     ],
   },
   schmetterling: {
@@ -799,8 +807,8 @@ const EX = {
   kinn: {
     cycle: 3, props: () => P.chair() + P.floor(),
     frames: [
-      { hip: [92, 134], t: [-90, -86], n: -66, aR: { to: [126, 130], bend: -1 }, aL: { to: [129, 128], bend: -1 }, lR: { a: 2, b: 90 }, lL: { a: 0, b: 88 } },
-      { hip: [92, 134], t: [-90, -90], n: -96, aR: { to: [126, 130], bend: -1 }, aL: { to: [129, 128], bend: -1 }, lR: { a: 2, b: 90 }, lL: { a: 0, b: 88 } },
+      { hip: [92, 134], t: [-90, -86], n: -66, face: 0, aR: { to: [126, 130], bend: -1 }, aL: { to: [129, 128], bend: -1 }, lR: { a: 2, b: 90 }, lL: { a: 0, b: 88 } },
+      { hip: [92, 134], t: [-90, -90], n: -96, face: 2, aR: { to: [126, 130], bend: -1 }, aL: { to: [129, 128], bend: -1 }, lR: { a: 2, b: 90 }, lL: { a: 0, b: 88 } },
     ],
   },
   bosusquat: {
@@ -829,14 +837,14 @@ const EX = {
     cycle: 5, props: () => P.floor(),
     frames: [
       { hip: [118, 97], t: [-90, -90], n: -90, aR: { a: 92, b: 90 }, aL: { a: 90, b: 88 }, lR: { a: 92, b: 89 }, lL: { a: 97, b: 100, f: 20 } },
-      { hip: [115, 99], t: [-12, -8], n: 0, aR: { a: 88, b: 86 }, aL: { a: 86, b: 84 }, lR: { a: 84, b: 94 }, lL: { a: 188, b: 188, f: 100 } },
+      { hip: [115, 99], t: [-8, -6], n: -6, aR: { a: 88, b: 86 }, aL: { a: 86, b: 84 }, lR: { a: 84, b: 94 }, lL: { a: 173, b: 173, f: 85 } },
     ],
   },
   bridge: {
     cycle: 4, props: () => P.floor(),
     frames: [
-      { hip: [123, 171], t: [180, 180], n: 180, face: -90, aR: { a: 2, b: 0 }, aL: { a: 2, b: 0 }, lR: { to: [165, 178], bend: -1 }, lL: { a: -48, b: -48 }, depth: [0, -2] },
-      { hip: [112, 139], t: [142, 142], n: 180, face: -90, aR: { a: 2, b: 0 }, aL: { a: 2, b: 0 }, lR: { to: [165, 178], bend: -1 }, lL: { a: -4, b: -4 }, depth: [0, -2] },
+      { hip: [120, 172], t: [180, 180], n: 180, face: -90, aR: { a: 2, b: 0 }, aL: { a: 2, b: 0 }, lR: { to: [170, 177.5], bend: -1 }, lL: { a: -44, b: -44 }, depth: [0, -2] },
+      { hip: [116.9, 154.2], t: [160, 160], n: 180, face: -90, aR: { a: 2, b: 0 }, aL: { a: 2, b: 0 }, lR: { to: [170, 177.5], bend: -1 }, lL: { a: -20, b: -20 }, depth: [0, -2] },
     ],
   },
   puwide: pullup(50),
@@ -846,14 +854,14 @@ const EX = {
     cycle: 4, props: () => P.bar(),
     frames: [
       { hip: [119, 100], t: [-91, -89], n: -89, aR: { to: [126, -4] }, aL: { to: [129, -6] }, lR: { a: 92, b: 92 }, lL: { a: 94, b: 94 } },
-      { hip: [124, 100], t: [-98, -92], n: -90, aR: { to: [126, -4] }, aL: { to: [129, -6] }, lR: { a: -12, b: 80 }, lL: { a: -8, b: 84 } },
+      { hip: [128, 96], t: [-102, -92], n: -90, aR: { to: [126, -4] }, aL: { to: [129, -6] }, lR: { a: -38, b: 58 }, lL: { a: -34, b: 62 } },
     ],
   },
   hrow: {
     cycle: 4, props: () => P.floor(), over: sk => P.strap(sk.toeR, sk.handR),
     frames: [
-      { hip: [80, 174], t: [-76, -80], n: -84, aR: { to: [150, 140] }, aL: { to: [152, 138] }, lR: { a: 0, b: 0, f: -84 }, lL: { a: -2, b: 0, f: -84 } },
-      { hip: [80, 174], t: [-94, -96], n: -92, aR: { to: [96, 144] }, aL: { to: [98, 142] }, lR: { a: 0, b: 0, f: -84 }, lL: { a: -2, b: 0, f: -84 } },
+      { hip: [80, 174], t: [-84, -86], n: -86, aR: { to: [150, 140] }, aL: { to: [152, 138] }, lR: { a: 0, b: 0, f: -84 }, lL: { a: -2, b: 0, f: -84 } },
+      { hip: [80, 174], t: [-92, -93], n: -92, aR: { to: [96, 144] }, aL: { to: [98, 142] }, lR: { a: 0, b: 0, f: -84 }, lL: { a: -2, b: 0, f: -84 } },
     ],
   },
   pullapart: {
@@ -917,8 +925,8 @@ const EX = {
   hamhands: {
     cycle: 6, side: 'R', props: () => P.floor(),
     frames: [
-      { hip: [130, 175], t: [180, 180], n: 180, face: -90, aR: { to: 'kneeR', bend: 1 }, aL: { to: 'kneeR', bend: 1 }, lR: { a: -78, b: -70 }, lL: { a: 0, b: 0, f: -90 }, depth: [0, -2] },
-      { hip: [130, 175], t: [180, 180], n: 180, face: -90, aR: { to: 'kneeR', bend: 1 }, aL: { to: 'kneeR', bend: 1 }, lR: { a: -96, b: -96 }, lL: { a: 0, b: 0, f: -90 }, depth: [0, -2] },
+      { hip: [130, 175], t: [180, 180], n: 180, face: -90, aR: { to: ['hipR', 'kneeR', 0.6], bend: 1, k: 1.15 }, aL: { to: ['hipR', 'kneeR', 0.6], bend: 1, k: 1.15 }, lR: { a: -78, b: -70 }, lL: { a: 0, b: 0, f: -90 }, depth: [0, -2] },
+      { hip: [130, 175], t: [180, 180], n: 180, face: -90, aR: { to: ['hipR', 'kneeR', 0.75], bend: 1, k: 1.15 }, aL: { to: ['hipR', 'kneeR', 0.75], bend: 1, k: 1.15 }, lR: { a: -96, b: -96 }, lL: { a: 0, b: 0, f: -90 }, depth: [0, -2] },
     ],
   },
   haende: {
@@ -982,7 +990,7 @@ function pullup(dx) {
     cycle: 3, props: () => P.cbar(bar),
     frames: [
       { view: 'front', hip: [120, hang], t: [-90, -90], n: -90, ...arms(1), ...legs },
-      { view: 'front', hip: [120, bar + 66], t: [-90, -90], n: -90, ...arms(0.6), ...legs },
+      { view: 'front', hip: [120, bar + 58], t: [-90, -90], n: -90, ...arms(0.6), ...legs },
     ],
   };
 }
@@ -1046,6 +1054,7 @@ const ICON = {
   voiceOff: I('<path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-9l-5 4z"/><path d="M3 3l18 18"/>', false),
   check: I('<path d="M5 12.5l4.5 4.5L19 7.5"/>', false),
   ext: I('<path d="M14 5h5v5M19 5l-8 8M17 14v5H5V7h5"/>', false),
+  plus: I('<path d="M12 5v14M5 12h14"/>', false),
   camera: I('<path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13.5" r="3.5"/>', false),
   stretch: I('<circle cx="12" cy="4.6" r="2.1" fill="currentColor" stroke="none"/><path d="M3.5 8.5L12 10l8.5-1.5M12 10v4.5l-4.5 6M12 14.5l4.5 6"/>', false),
   gym: I('<path d="M2.5 10v4M5.5 7v10M18.5 7v10M21.5 10v4M5.5 12h13"/>', false),
@@ -1221,7 +1230,9 @@ const extrasOf = (place, plan) => place === 'home' ? HEXTRA[plan] || HEXTRA.A : 
 const planName = s => (s.place === 'home' ? 'Home ' : 'Plan ') + s.plan;
 const rangeOf = id => M[id].range || [8, 12];
 const setsOf = id => M[id].sets || 3;
-const stepOf = id => M[id].step || 2.5;
+const stepOf = id => M[id].step || 5; // FitInn weight stacks go in 5 kg plates
+// One step up or down, landing on a full step (47.5 → 50, not 52.5).
+const stepKg = (kg, id, dir) => { const st = stepOf(id), q = (kg || 0) / st; return Math.max(0, Math.round((dir > 0 ? Math.floor(q + 1e-9) + 1 : Math.ceil(q - 1e-9) - 1) * st * 10) / 10); };
 const vidOf = m => m.url ? { href: FITINN + m.url, label: 'FitInn video' } : m.href ? { href: m.href, label: 'FitInn video' } : { href: yt(m.q || m.name), label: 'Find a video' };
 // QR stickers hold fitinn.at/qr/<id>: the id is the machine id above, its letters the muscle group.
 // fitinn.js lists every FitInn strength machine under that id; the ones not in a plan join M here.
@@ -1309,7 +1320,7 @@ const GRID = {
 };
 
 // ---------- Storage: on the phone first, then copied to GitHub (sync.js) ----------
-const COLLS = ['days', 'sessions', 'machines', 'settings'];
+const COLLS = ['days', 'sessions', 'machines', 'settings', 'prompts'];
 const Store = {
   list(coll) {
     return LS.get('idx.' + coll, []).map(id => { const v = LS.get('doc.' + coll + '/' + id, null); return v && { ...v, id }; }).filter(Boolean);
@@ -1338,6 +1349,7 @@ function applyDoc(path, doc) {
   if (coll === 'days') { if (doc) D.days[id] = { date: id, pullups: [], stretch: [], walk: false, ...doc }; else delete D.days[id]; }
   else if (coll === 'machines') { if (doc) { D.machines[id] = { ...doc, id }; addCustom(id, doc); } else delete D.machines[id]; }
   else if (coll === 'settings') { if (doc) D.settings[id] = doc; else delete D.settings[id]; }
+  else if (coll === 'prompts') { if (doc) D.prompts[id] = doc; else delete D.prompts[id]; }
   else if (coll === 'sessions') {
     D.sessions = D.sessions.filter(x => x.id !== id);
     if (doc && Array.isArray(doc.sets)) upsertSession({ ...doc, id });
@@ -1413,7 +1425,8 @@ const Photos = {
   // A photo taken on this phone: shown right away, uploaded with the next sync.
   async addLocal(id, blob) {
     const have = LS.get('photos.have', {}), want = LS.get('photos.want', null) || {};
-    let p = `images/${id}.jpg`;
+    id = (M[id] && M[id].photo) || id; // machines sharing a photo (e.g. the cable station) store it once
+    let p = LS.get('photos.want', null) == null ? `images/${id}-${Date.now()}.jpg` : `images/${id}.jpg`; // repo list unknown: a name that can't clash
     for (let n = 2; have[p] || this.urls[p] || want[p]; n++) p = `images/${id}-${n}.jpg`; // never replace a photo in the repo
     try { await (await caches.open(PHOTO_CACHE)).put(this.key(p), new Response(blob, { headers: { 'Content-Type': 'image/jpeg' } })); }
     catch (e) { console.warn('photos', e); toast('Could not keep the photo on this phone.'); return; }
@@ -1425,13 +1438,25 @@ const Photos = {
     try { const r = await (await caches.open(PHOTO_CACHE)).match(this.key(p)); return r ? new Uint8Array(await r.arrayBuffer()) : null; }
     catch (e) { console.warn('photos', e); return null; }
   },
+  // Photo taken from the empty slot on the set screen.
+  async take(id, file) {
+    if (!file) return;
+    const slot = $('#ss-photos .padd'); if (slot) { slot.classList.add('busy'); slot.querySelector('small').textContent = 'Saving…'; }
+    let img;
+    try { img = await createImageBitmap(file); } catch (e) { this.refresh(); return toast('Could not open this photo. Please try again.'); }
+    const { blob } = await shrink(img); try { img.close(); } catch {}
+    await this.addLocal(id, blob);
+    toast(TEST ? 'Photo saved (test mode, not synced).' : 'Photo saved. It uploads with the next sync.');
+  },
   uploaded(p, sha) {
     const have = LS.get('photos.have', {}), want = LS.get('photos.want', null);
     have[p] = sha; LS.set('photos.have', have);
     if (want) { want[p] = sha; LS.set('photos.want', want); }
   },
   thumbs(id) {
-    const list = this.of(id); if (!list.length) return '';
+    const list = this.of(id);
+    // No photo yet: a dashed slot in the same place to take one (gym machines only).
+    if (!list.length) return M[id] && !M[id].home ? `<label class="pthumb padd">${ICON.plus}<small>Take a photo</small><input class="ph-cam" type="file" accept="image/*" capture="environment" data-ex="${id}" aria-label="Take a photo of ${h(M[id].name)}"></label>` : '';
     return `<button class="pthumb" data-photo="${id}" aria-label="Show the photo of ${h(M[id].name)} fullscreen"><img src="${list[0]}" alt="">${list.length > 1 ? `<span>${list.length}</span>` : ''}</button>`;
   },
   // Update the open set screen in place (no full re-render, so typing isn't interrupted).
@@ -1469,13 +1494,14 @@ const PV = {
 window.addEventListener('popstate', () => { if (!$('#pv').hidden) PV.hide(); });
 
 // In-memory data
-const D = { sessions: [], machines: {}, days: {}, settings: {} };
+const D = { sessions: [], machines: {}, days: {}, settings: {}, prompts: {} };
 function loadAll() {
   const ses = Store.list('sessions'), mac = Store.list('machines'), days = Store.list('days');
   D.sessions = ses.filter(s => Array.isArray(s.sets)).sort((a, b) => String(b.startedAt).localeCompare(String(a.startedAt)));
   D.machines = Object.fromEntries(mac.map(m => [m.id, m]));
   for (const m of mac) addCustom(m.id, m);
   D.settings = Object.fromEntries(Store.list('settings').map(({ id, ...x }) => [id, x]));
+  D.prompts = Object.fromEntries(Store.list('prompts').map(({ id, ...x }) => [id, x]));
   D.days = Object.fromEntries(days.map(d => [d.id, { date: d.id, pullups: [], stretch: [], walk: false, ...d }]));
 }
 function dayDoc(k = TODAY()) { return D.days[k] || (D.days[k] = { date: k, pullups: [], stretch: [], walk: false }); }
@@ -2174,7 +2200,7 @@ const SS = {
     </section>`;
   },
   suggest(exId, setNo) {
-    const S = this.S, r = rangeOf(exId), n = setsOf(exId), step = stepOf(exId), m = M[exId];
+    const S = this.S, r = rangeOf(exId), n = setsOf(exId), m = M[exId];
     const today = S.sets.filter(x => x.ex === exId), last = lastFor(exId, S.id);
     let kg, reps, hint = '', tone = '';
     if (today.length) {
@@ -2185,7 +2211,7 @@ const SS = {
       const s = last.sets; kg = Math.max(...s.map(x => x.kg));
       const all = s.length >= n && s.every(x => x.reps >= r[1]);
       if (all) {
-        kg += step; reps = r[0]; tone = 'up';
+        kg = stepKg(kg, exId, 1); reps = r[0]; tone = 'up';
         hint = exId === 'bosu' ? `Last time 2 × ${r[1]}: today ${kgFmt(kg)}, or lower for 3 s.` : `Last time you hit ${r[1]} in every set: today ${kgFmt(kg)}.`;
       } else { reps = s[Math.min(setNo - 1, s.length - 1)].reps; hint = `Same weight. Goal: ${r[1]} reps in every set.`; }
     } else {
@@ -2270,6 +2296,7 @@ const SS = {
             : `<div class="taken">${canLater ? '<button class="btn" data-act="ss-later">Taken? Do it later</button>' : ''}<button class="btn" data-act="ss-pick">I used another machine</button></div>`}
           ${cues.length ? `<div class="sec"><h4>Technique</h4><ul class="cues">${cues.map(c => `<li>${h(c)}</li>`).join('')}</ul></div>` : ''}
           ${m.home ? '' : `<div class="sec"><h4>My settings</h4><input class="field" id="in-setting" data-ex="${exId}" value="${h(setting)}" placeholder="e.g. seat 4, pad 2" autocomplete="off"></div>`}
+          <div class="sec"><h4><label for="in-prompt">Prompt for AI</label></h4><textarea class="field" id="in-prompt" data-ex="${exId}" rows="2" placeholder="What should Claude change about this exercise? It gets built the next time Claude works on the app." autocomplete="off">${h(D.prompts[exId]?.text || '')}</textarea></div>
           ${m.home && alts.length > 1 ? `<div class="sec"><h4>Swap for</h4><div class="alts">${alts.map(a => `<button class="alt" data-alt="${a}" aria-pressed="${a === exId}">${h(M[a].name)}</button>`).join('')}</div></div>` : ''}
           <div class="sec links"><a href="${v.href}" target="_blank" rel="noopener">${ICON.ext} ${v.label}</a>
             ${grid ? '' : '<button class="linkbtn" data-act="skip-set">Skip set</button>'}
@@ -2317,10 +2344,11 @@ const SS = {
     return { kg: isNaN(kg) ? null : kg, reps: isNaN(reps) ? null : reps };
   },
   bump(field, dir) {
-    const st = this.sched[this.S.step], exId = this.exFor(st.slot);
+    // In the gym grid there is no step schedule: the machine is S.cur.
+    const S = this.S, exId = this.grid ? S.cur : this.exFor(this.sched[S.step].slot);
     const d = this.readDraft();
-    if (field === 'kg') { const v = Math.max(0, Math.round(((d.kg ?? 0) + dir * stepOf(exId)) * 10) / 10); $('#in-kg').value = v; this.draft.kg = v; }
-    else { const v = Math.max(0, (d.reps ?? rangeOf(exId)[1]) + dir); $('#in-reps').value = v; this.draft.reps = v; }
+    if (field === 'kg') { const v = stepKg(d.kg, exId, dir); $('#in-kg').value = v; if (this.draft) this.draft.kg = v; }
+    else { const v = Math.max(0, (d.reps ?? rangeOf(exId)[1]) + dir); $('#in-reps').value = v; if (this.draft) this.draft.reps = v; }
   },
   saveSet() {
     if (this.grid) return this.saveSetGrid();
@@ -3018,7 +3046,7 @@ function testSample() {
     const pl = home ? 'home' : 'gym', p = plansOf(pl)[plan], sets = [];
     for (const pr of p.pairs) for (const ex of pr) for (let s = 1; s <= 3; s++) {
       const m = M[ex], r = rangeOf(ex);
-      if (!m.home) { kg[ex] = kg[ex] ?? (m.start || 20 + Math.round(rnd() * 8) * 2.5); sets.push({ ex, kg: kg[ex], reps: r[0] + Math.floor(rnd() * (r[1] - r[0] + 1)), at: k + 'T18:00:00.000Z' }); }
+      if (!m.home) { kg[ex] = kg[ex] ?? (m.start || 20 + Math.round(rnd() * 4) * 5); sets.push({ ex, kg: kg[ex], reps: r[0] + Math.floor(rnd() * (r[1] - r[0] + 1)), at: k + 'T18:00:00.000Z' }); }
       else sets.push({ ex, ...(m.load === 'bw' ? {} : { band: BAND_KEYS[Math.min(4, Math.floor(n / 6))] }), reps: r[0] + Math.floor(rnd() * (r[1] - r[0] + 1)), at: k + 'T18:00:00.000Z' });
     }
     for (const ex of Object.keys(kg)) if (rnd() < 0.3) kg[ex] += stepOf(ex);
@@ -3082,6 +3110,16 @@ const ACT = {
     saveDay(); renderGym(); if (d.walk) toast('Walk logged.');
   },
 };
+// A change request for one exercise, typed on its set screen. One document per exercise (prompts/<exercise id>),
+// synced like everything else; Claude reads them from the data repo and deletes each file once it is built.
+function savePrompt(el) {
+  const id = el.dataset.ex, text = el.value.trim(), old = D.prompts[id];
+  if ((old?.text || '') === text) return false;
+  if (!old && !text) return false;
+  D.prompts[id] = { name: M[id].name, code: M[id].code, place: M[id].home ? 'home' : 'gym', text, updatedAt: new Date().toISOString() };
+  Store.put('prompts/' + id, D.prompts[id]);
+  return true;
+}
 document.addEventListener('click', e => {
   if (e.target.id === 'pv-img') return PV.zoom(e);
   const t = e.target.closest('[data-act],[data-play],[data-variant],[data-pull],[data-tab],[data-plan],[data-alt],[data-place],[data-band],[data-photo],[data-pick],[data-pkg],[data-now],[data-studio],[data-range],[data-grip],[data-tile],[data-cardio],[data-kit]');
@@ -3110,11 +3148,14 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   if (e.target.id === 'pk-q') return PK.filter(e.target.value);
   if (e.target.id === 'sto-q') return filterRows('#sto-list', e.target.value, '#sto-none');
+  if (e.target.id === 'in-prompt') return savePrompt(e.target); // kept while typing, so nothing is lost if the app closes
   if (!SS.draft) return;
   if (e.target.id === 'in-kg' || e.target.id === 'in-reps') { const d = SS.readDraft(); SS.draft.kg = d.kg ?? ''; SS.draft.reps = d.reps ?? ''; }
 });
 document.addEventListener('change', e => {
+  if (e.target.classList.contains('ph-cam')) { Photos.take(e.target.dataset.ex, e.target.files && e.target.files[0]); e.target.value = ''; return; }
   if (e.target.id === 'pk-cam') { PK.onPhoto(e.target.files && e.target.files[0]); e.target.value = ''; return; }
+  if (e.target.id === 'in-prompt') { if (savePrompt(e.target) || D.prompts[e.target.dataset.ex]?.text) toast(TEST ? 'Prompt saved (test mode, not synced).' : 'Prompt saved for Claude.'); return; }
   if (e.target.id !== 'in-setting') return;
   const id = e.target.dataset.ex, v = e.target.value.trim();
   if ((D.machines[id]?.setting || '') === v) return;
