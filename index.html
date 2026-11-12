@@ -303,6 +303,8 @@ button.stat.on b{color:var(--accent)}
 .sec h4{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
 .cues{margin:0;padding-left:18px;font-size:15px}
 .cues li+li{margin-top:3px}
+.pl-ai label{display:block;margin-bottom:6px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+#ai-card textarea{margin-top:10px}
 textarea.field{display:block;resize:vertical;font-family:inherit;line-height:1.35}
 .field{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);padding:10px 12px;font-size:16px}
 .alts{display:flex;gap:6px;flex-wrap:wrap}
@@ -510,6 +512,11 @@ details.tv summary{cursor:pointer;color:var(--accent);font-weight:700;font-size:
     <div id="tab-gym" role="tabpanel" aria-label="Workout" hidden></div>
     <div id="tab-stats" role="tabpanel" aria-label="Stats" hidden></div>
   </main>
+  <section class="card" id="ai-card">
+    <div class="eyebrow"><label for="ai-general">Prompt for AI</label></div>
+    <div class="sub">Anything about the app, not tied to one exercise. Claude builds it the next time it works on the app.</div>
+    <textarea class="field ai-prompt" id="ai-general" data-pid="general" rows="3" placeholder="e.g. Add a rest-day reminder" autocomplete="off"></textarea>
+  </section>
 </div>
 <nav class="tabbar" role="tablist" aria-label="Sections">
   <button role="tab" data-tab="dehnen" aria-selected="true"><i id="ti-dehnen"></i>Daily</button>
@@ -544,6 +551,10 @@ details.tv summary{cursor:pointer;color:var(--accent);font-weight:700;font-size:
       <button class="icon-btn lg" data-act="pl-next" aria-label="Next" id="pl-next-btn"></button>
     </div>
     <div class="pl-foot pl-run"><span id="pl-next"></span></div>
+    <div class="pl-ai pl-run" id="pl-ai">
+      <label for="pl-prompt">Prompt for AI · <span id="pl-ai-name"></span></label>
+      <textarea class="field ai-prompt" id="pl-prompt" rows="2" placeholder="What should Claude change about this stretch? Typing pauses the timer." autocomplete="off"></textarea>
+    </div>
     <div class="pl-done">
       <div class="check" id="pl-check"></div>
       <h2 id="pl-done-title">Done</h2>
@@ -1779,6 +1790,7 @@ const PL = {
   open(id, from) {
     this.id = id; this.from = from || null; this.ph = buildPhases(seqOf(id));
     this.i = 0; this.stage = 'ready'; this.running = false; this.el = 0; this.cache = {}; this.startedAt = 0;
+    delete $('#pl-prompt').dataset.pid;
     $('#pl').classList.remove('is-done');
     $('#pl-seq').textContent = SEQ[id].title;
     $('#pl-bar').innerHTML = this.ph.map(() => '<i><b></b></i>').join('');
@@ -1899,6 +1911,10 @@ const PL = {
       this.set('#pl-vid', 'hidden', !ex.q);
       this.set('#pl-media', 'className', 'pl-media pl-run' + (ex.q ? '' : ' novid'));
       if (ex.q) this.set('#pl-vid', 'href', yt(ex.q));
+      this.set('#pl-ai', 'hidden', p.ex === 'pause');
+      this.set('#pl-ai-name', 'textContent', ex.name);
+      const ta = $('#pl-prompt'), pid = 'str-' + p.ex;
+      if (ta.dataset.pid !== pid) { ta.dataset.pid = pid; ta.value = D.prompts[pid]?.text || ''; }
     }
     let label = '', time = '', state = '';
     if (this.stage === 'ready') { label = 'Ready'; time = 'Start'; state = ICON.play; }
@@ -2296,7 +2312,7 @@ const SS = {
             : `<div class="taken">${canLater ? '<button class="btn" data-act="ss-later">Taken? Do it later</button>' : ''}<button class="btn" data-act="ss-pick">I used another machine</button></div>`}
           ${cues.length ? `<div class="sec"><h4>Technique</h4><ul class="cues">${cues.map(c => `<li>${h(c)}</li>`).join('')}</ul></div>` : ''}
           ${m.home ? '' : `<div class="sec"><h4>My settings</h4><input class="field" id="in-setting" data-ex="${exId}" value="${h(setting)}" placeholder="e.g. seat 4, pad 2" autocomplete="off"></div>`}
-          <div class="sec"><h4><label for="in-prompt">Prompt for AI</label></h4><textarea class="field" id="in-prompt" data-ex="${exId}" rows="2" placeholder="What should Claude change about this exercise? It gets built the next time Claude works on the app." autocomplete="off">${h(D.prompts[exId]?.text || '')}</textarea></div>
+          <div class="sec"><h4><label for="in-prompt">Prompt for AI</label></h4><textarea class="field ai-prompt" id="in-prompt" data-pid="${exId}" rows="2" placeholder="What should Claude change about this exercise? It gets built the next time Claude works on the app." autocomplete="off">${h(D.prompts[exId]?.text || '')}</textarea></div>
           ${m.home && alts.length > 1 ? `<div class="sec"><h4>Swap for</h4><div class="alts">${alts.map(a => `<button class="alt" data-alt="${a}" aria-pressed="${a === exId}">${h(M[a].name)}</button>`).join('')}</div></div>` : ''}
           <div class="sec links"><a href="${v.href}" target="_blank" rel="noopener">${ICON.ext} ${v.label}</a>
             ${grid ? '' : '<button class="linkbtn" data-act="skip-set">Skip set</button>'}
@@ -3113,12 +3129,19 @@ const ACT = {
 // A change request for one exercise, typed on its set screen. One document per exercise (prompts/<exercise id>),
 // synced like everything else; Claude reads them from the data repo and deletes each file once it is built.
 function savePrompt(el) {
-  const id = el.dataset.ex, text = el.value.trim(), old = D.prompts[id];
-  if ((old?.text || '') === text) return false;
+  const id = el.dataset.pid, text = el.value.trim(), old = D.prompts[id];
+  if (!id || (old?.text || '') === text) return false;
   if (!old && !text) return false;
-  D.prompts[id] = { name: M[id].name, code: M[id].code, place: M[id].home ? 'home' : 'gym', text, updatedAt: new Date().toISOString() };
+  const about = id === 'general' ? { name: 'General', place: 'app' }
+    : id.startsWith('str-') ? { name: STR[id.slice(4)].name, place: 'stretch' }
+    : { name: M[id].name, code: M[id].code, place: M[id].home ? 'home' : 'gym' };
+  D.prompts[id] = { ...about, text, updatedAt: new Date().toISOString() };
   Store.put('prompts/' + id, D.prompts[id]);
   return true;
+}
+// Fields that live outside the re-rendered views: show what is stored, unless the user is typing in them.
+function fillPrompts() {
+  for (const el of [$('#ai-general'), $('#pl-prompt')]) if (el.dataset.pid && document.activeElement !== el) el.value = D.prompts[el.dataset.pid]?.text || '';
 }
 document.addEventListener('click', e => {
   if (e.target.id === 'pv-img') return PV.zoom(e);
@@ -3148,14 +3171,14 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   if (e.target.id === 'pk-q') return PK.filter(e.target.value);
   if (e.target.id === 'sto-q') return filterRows('#sto-list', e.target.value, '#sto-none');
-  if (e.target.id === 'in-prompt') return savePrompt(e.target); // kept while typing, so nothing is lost if the app closes
+  if (e.target.classList.contains('ai-prompt')) return savePrompt(e.target); // kept while typing, so nothing is lost if the app closes
   if (!SS.draft) return;
   if (e.target.id === 'in-kg' || e.target.id === 'in-reps') { const d = SS.readDraft(); SS.draft.kg = d.kg ?? ''; SS.draft.reps = d.reps ?? ''; }
 });
 document.addEventListener('change', e => {
   if (e.target.classList.contains('ph-cam')) { Photos.take(e.target.dataset.ex, e.target.files && e.target.files[0]); e.target.value = ''; return; }
   if (e.target.id === 'pk-cam') { PK.onPhoto(e.target.files && e.target.files[0]); e.target.value = ''; return; }
-  if (e.target.id === 'in-prompt') { if (savePrompt(e.target) || D.prompts[e.target.dataset.ex]?.text) toast(TEST ? 'Prompt saved (test mode, not synced).' : 'Prompt saved for Claude.'); return; }
+  if (e.target.classList.contains('ai-prompt')) { if (savePrompt(e.target) || D.prompts[e.target.dataset.pid]?.text) toast(TEST ? 'Prompt saved (test mode, not synced).' : 'Prompt saved for Claude.'); return; }
   if (e.target.id !== 'in-setting') return;
   const id = e.target.dataset.ex, v = e.target.value.trim();
   if ((D.machines[id]?.setting || '') === v) return;
@@ -3163,9 +3186,10 @@ document.addEventListener('change', e => {
   Store.put('machines/' + id, D.machines[id]);
   toast('Setting saved.');
 });
+document.addEventListener('focusin', e => { if (e.target.id === 'pl-prompt' && PL.running) PL.toggle(); });
 document.addEventListener('keydown', e => {
   if (!$('#pv').hidden) { if (e.key === 'Escape') PV.close(); else if (e.key === 'ArrowRight') PV.step(1); else if (e.key === 'ArrowLeft') PV.step(-1); return; }
-  if (!PL.active || e.target.closest('input')) return;
+  if (!PL.active || e.target.closest('input,textarea')) return;
   if (e.key === ' ') { e.preventDefault(); PL.toggle(); }
   else if (e.key === 'ArrowRight') PL.next();
   else if (e.key === 'ArrowLeft') PL.prev();
@@ -3173,7 +3197,7 @@ document.addEventListener('keydown', e => {
 });
 
 // ---------- Start ----------
-function renderAll() { renderDehnen(); renderGym(); if (tab === 'stats') renderStats(); renderTestbar(); }
+function renderAll() { renderDehnen(); renderGym(); if (tab === 'stats') renderStats(); renderTestbar(); fillPrompts(); }
 function boot() {
   $('#today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   pickVoice(); try { speechSynthesis.onvoiceschanged = pickVoice; } catch {}
