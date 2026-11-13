@@ -99,6 +99,14 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 .mrow .for{color:var(--muted);font-size:13px}
 .st-chk{display:flex;align-items:center;gap:10px;font-size:15px;min-height:44px}
 .st-chk input{width:20px;height:20px;accent-color:var(--accent)}
+.swrow{display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer}
+.swrow>span{display:flex;flex-direction:column;gap:3px;font-size:16px}
+.switch{appearance:none;-webkit-appearance:none;flex:none;width:52px;height:30px;border-radius:15px;margin:0;background:var(--muted);position:relative;cursor:pointer;transition:background .15s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.switch:checked{background:var(--accent)}
+.switch:checked::after{transform:translateX(22px)}
+.switch:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.switch,.switch::after{transition:none}}
 .pk-row .here{color:var(--muted);font-size:12px}
 .sto .pk-img{display:grid;place-items:center;border-left:0;color:var(--muted)}
 .sto .pk-img svg{width:22px;height:22px}
@@ -1035,9 +1043,11 @@ const clone = o => JSON.parse(JSON.stringify(o));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const yt = q => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-// Test mode (?test in the address): its own storage on this device, never synced, so trying things out
-// can't touch the real records. It starts as a copy of what's on the device.
-const TEST = new URLSearchParams(location.search).has('test');
+// Sync off (the switch in the Sync dialog, remembered on this device) or ?test in the address: the app works on
+// its own copy of the data on this device and never syncs, so trying things out can't touch the real records.
+// Switching sync off starts a fresh copy of what's on the device; switching it back on throws the copy away.
+const SYNC_OFF_KEY = 'dg.syncOff';
+const TEST = new URLSearchParams(location.search).has('test') || (() => { try { return localStorage.getItem(SYNC_OFF_KEY) === '1'; } catch { return false; } })();
 const LSP = TEST ? 'dgtest.' : 'dg.';
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(LSP + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
@@ -1457,7 +1467,7 @@ const Photos = {
     try { img = await createImageBitmap(file); } catch (e) { this.refresh(); return toast('Could not open this photo. Please try again.'); }
     const { blob } = await shrink(img); try { img.close(); } catch {}
     await this.addLocal(id, blob);
-    toast(TEST ? 'Photo saved (test mode, not synced).' : 'Photo saved. It uploads with the next sync.');
+    toast(TEST ? 'Photo saved on the test copy (sync is off).' : 'Photo saved. It uploads with the next sync.');
   },
   uploaded(p, sha) {
     const have = LS.get('photos.have', {}), want = LS.get('photos.want', null);
@@ -1525,7 +1535,7 @@ function upsertSession(doc) {
 }
 const hhmm = iso => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 function syncState(st = Sync.status()) {
-  if (TEST) return { cls: 'wait', label: 'Test mode', text: 'Test mode: separate from your real data, never synced.' };
+  if (TEST) return { cls: 'wait', label: 'Sync off', text: 'Sync is off: you are working on a copy. Nothing is saved to your real data or uploaded.' };
   const last = st.last ? (dkey(new Date(st.last)) === TODAY() ? 'today ' + hhmm(st.last) : fmtDate(dkey(new Date(st.last))) + ' ' + hhmm(st.last)) : null;
   if (!st.configured) return { cls: '', label: 'Set up sync', text: 'Saved on this phone only. Connect your GitHub repo below to keep a copy there.' };
   if (st.running) return { cls: 'busy', label: 'Syncing…', text: 'Syncing with GitHub…' };
@@ -1544,13 +1554,25 @@ function setSync(st = Sync.status()) {
 }
 const DEFAULT_REPO = 'dboandl/stretch-gym-data';
 const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new?name=Stretch+%26+Gym+phone&description=Lets+the+Stretch+%26+Gym+app+save+to+stretch-gym-data&target_name=dboandl&expires_in=365&contents=write';
+// The Sync switch. Off = debug/test copy (see TEST); the real records and their unsent changes wait untouched.
+async function setSyncOn(on) {
+  try { if (on) localStorage.removeItem(SYNC_OFF_KEY); else localStorage.setItem(SYNC_OFF_KEY, '1'); }
+  catch { return toast('Could not change this setting.'); }
+  for (const k of Object.keys(localStorage)) if (k.startsWith('dgtest.')) localStorage.removeItem(k);
+  try { await caches.delete('photos-test'); } catch {}
+  if (location.search) location.replace(location.pathname + location.hash); else location.reload(); // drops ?test; same-URL replace with a #hash wouldn't reload
+}
 function openSyncDlg() {
-  if (TEST) return toast('Test mode: nothing is synced here. Leave test mode to sync.');
   const c = Sync.cfg, dlg = $('#syncdlg');
+  const sw = `<label class="swrow"><span><b>Sync</b><span class="sub small">${TEST
+    ? 'Off. Turn it on to go back to your real data; the test copy is thrown away.'
+    : 'On. Turn it off to test or debug on a copy of your data without changing your real records.'}</span></span>
+    <input type="checkbox" role="switch" class="switch" id="sd-sync"${TEST ? '' : ' checked'}></label>`;
   dlg.innerHTML = `<form method="dialog" class="dlg-in">
     <div class="row between"><h2 class="h3" id="sd-title">Sync</h2><button class="icon-btn" value="close" aria-label="Close">${ICON.close}</button></div>
-    <p class="sub">Everything is saved on this phone first, so the app works without internet. When there is internet, new entries are copied to your private GitHub repo by themselves.</p>
+    ${sw}
     <div class="st-line" id="sd-status" role="status"></div>
+    ${TEST ? '<span class="sub small" id="sd-ver"></span>' : `<p class="sub">Everything is saved on this phone first, so the app works without internet. When there is internet, new entries are copied to your private GitHub repo by themselves.</p>
     <label class="fld">Repository<input id="sd-repo" value="${h(c ? c.repo : DEFAULT_REPO)}" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
     <label class="fld">Access token<input id="sd-token" type="password" placeholder="${c && c.hasToken ? 'Saved – leave empty to keep it' : 'github_pat_…'}" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
     <p class="sub small">A fine-grained token for <b>only this repo</b> with “Contents: Read and write”. <a href="${TOKEN_URL}" target="_blank" rel="noopener">Create one on GitHub ↗</a></p>
@@ -1559,7 +1581,7 @@ function openSyncDlg() {
       <button type="button" class="btn" id="sd-now" data-act="sync-now">Sync now</button>
       <button type="button" class="btn ghost" data-act="sync-backup">Download backup file</button>
     </div>
-    <div class="row between"><span class="sub small" id="sd-ver"></span><button type="button" class="linkbtn" id="sd-off" data-act="sync-off">Disconnect</button></div>
+    <div class="row between"><span class="sub small" id="sd-ver"></span><button type="button" class="linkbtn" id="sd-off" data-act="sync-off">Disconnect</button></div>`}
   </form>`;
   setSync();
   if (window.caches) caches.keys().then(k => { const v = k.find(x => x.startsWith('sg-')); if (v) $('#sd-ver').textContent = 'Version ' + v.slice(3); }).catch(() => {});
@@ -3072,13 +3094,13 @@ function testSample() {
     Store.put('sessions/' + id, doc); upsertSession({ ...clone(doc), id });
     saveDay(k); plan = plan === 'A' ? 'B' : 'A';
   }
-  toast('Sample data added (test mode only).'); renderAll();
+  toast('Sample data added to the test copy.'); renderAll();
 }
 function renderTestbar() {
   if (!TEST) return;
   const empty = !logged().length;
-  $('#testbar').innerHTML = `<div class="testbar"><b>Test mode</b><span>Separate from your real data, never synced.</span>
-    <div>${empty ? '<button class="btn" data-act="test-sample">Add sample data</button>' : ''}<button class="btn" data-act="test-reset">Reset</button><a class="btn ghost" href="${location.pathname}${location.hash}">Leave</a></div></div>`;
+  $('#testbar').innerHTML = `<div class="testbar"><b>Sync off</b><span>Working on a copy. Nothing is saved to your real data.</span>
+    <div>${empty ? '<button class="btn" data-act="test-sample">Add sample data</button>' : ''}<button class="btn" data-act="test-reset">Reset</button><button class="btn ghost" data-act="sync-on">Turn sync on</button></div></div>`;
 }
 
 // ---------- Events ----------
@@ -3118,6 +3140,7 @@ const ACT = {
   'sync-open': () => openSyncDlg(),
   'sync-save': () => saveSyncCfg(),
   'sync-now': () => Sync.run(),
+  'sync-on': () => setSyncOn(true),
   'sync-off': () => { Sync.disconnect(); toast('Disconnected. Data stays on this phone.'); },
   'sync-backup': () => downloadBackup(),
   'walk': () => {
@@ -3176,9 +3199,10 @@ document.addEventListener('input', e => {
   if (e.target.id === 'in-kg' || e.target.id === 'in-reps') { const d = SS.readDraft(); SS.draft.kg = d.kg ?? ''; SS.draft.reps = d.reps ?? ''; }
 });
 document.addEventListener('change', e => {
+  if (e.target.id === 'sd-sync') return setSyncOn(e.target.checked);
   if (e.target.classList.contains('ph-cam')) { Photos.take(e.target.dataset.ex, e.target.files && e.target.files[0]); e.target.value = ''; return; }
   if (e.target.id === 'pk-cam') { PK.onPhoto(e.target.files && e.target.files[0]); e.target.value = ''; return; }
-  if (e.target.classList.contains('ai-prompt')) { if (savePrompt(e.target) || D.prompts[e.target.dataset.pid]?.text) toast(TEST ? 'Prompt saved (test mode, not synced).' : 'Prompt saved for Claude.'); return; }
+  if (e.target.classList.contains('ai-prompt')) { if (savePrompt(e.target) || D.prompts[e.target.dataset.pid]?.text) toast(TEST ? 'Prompt saved on the test copy only (sync is off).' : 'Prompt saved for Claude.'); return; }
   if (e.target.id !== 'in-setting') return;
   const id = e.target.dataset.ex, v = e.target.value.trim();
   if ((D.machines[id]?.setting || '') === v) return;
