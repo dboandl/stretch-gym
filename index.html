@@ -707,6 +707,10 @@ const P = {
     (ends ? [a, b].map(h => `<circle class="grip" cx="${f1(h[0])}" cy="${f1(h[1])}" r="4.5"/>`).join('') : ''),
   arc: sh => `<path class="arc" d="M${f1(sh[0] + 50)} ${f1(sh[1] + 6)} A 50 16 0 0 1 ${f1(sh[0] - 50)} ${f1(sh[1] + 6)}"/>`,
   weight: h => `<rect class="weight" x="${f1(h[0] - 9)}" y="${f1(h[1] - 5)}" width="18" height="10" rx="3"/>`,
+  // Dumbbell seen end-on (handle pointing at you), and one held upright at the chest (goblet).
+  dbell: h => `<circle class="weight" cx="${f1(h[0])}" cy="${f1(h[1])}" r="6.5"/>`,
+  dbup: h => `<rect class="weight" x="${f1(h[0] - 1)}" y="${f1(h[1] - 13)}" width="11" height="26" rx="4"/>`,
+  bench: () => `<line class="prop thick" x1="164" y1="140" x2="226" y2="140"/><line class="prop" x1="168" y1="140" x2="168" y2="${FLOOR}"/><line class="prop" x1="222" y1="140" x2="222" y2="${FLOOR}"/>`,
   // Loose band from where it is held down (foot) to the hand that holds the end.
   strap: (a, b) => `<line class="band" x1="${f1(a[0])}" y1="${f1(a[1])}" x2="${f1(b[0])}" y2="${f1(b[1])}"/><circle class="grip" cx="${f1(b[0])}" cy="${f1(b[1])}" r="4.5"/>`,
   // Ceiling pull-up bar seen from the front, hanging lower than `bar` so the head can reach it.
@@ -931,6 +935,43 @@ const EX = {
     frames: [
       { ...stand, n: -90, aR: { a: 92, b: 88 }, aL: { a: 90, b: 86 } },
       { ...stand, n: -90, aR: { a: 94, b: -62 }, aL: { a: 92, b: -64 } },
+    ],
+  },
+  // Dumbbells
+  dbgoblet: {
+    cycle: 4, props: () => P.floor(), over: sk => P.dbup(sk.handR),
+    frames: [
+      { hip: [118, 96], t: [-90, -90], n: -90, aR: { a: 75, b: -70 }, aL: { a: 73, b: -72 }, lR: { to: [121, 178], bend: -1 }, lL: { to: [124, 176], bend: -1 } },
+      { hip: [100, 134], t: [-66, -70], n: -74, aR: { a: 88, b: -48 }, aL: { a: 86, b: -50 }, lR: { to: [121, 178], bend: -1 }, lL: { to: [124, 176], bend: -1 } },
+    ],
+  },
+  dbsplit: {
+    cycle: 4, props: () => P.chair() + P.floor(), over: sk => P.dbell(sk.handL) + P.dbell(sk.handR),
+    frames: [
+      { hip: [150, 102], t: [-82, -84], n: -84, aR: { a: 92, b: 90 }, aL: { a: 90, b: 88 }, lR: { to: [178, 178], bend: -1 }, lL: { to: [112, 137], bend: -1, f: 178 } },
+      { hip: [140, 134], t: [-74, -78], n: -80, aR: { a: 94, b: 92 }, aL: { a: 92, b: 90 }, lR: { to: [178, 178], bend: -1 }, lL: { to: [112, 137], bend: -1, f: 178 } },
+    ],
+  },
+  dbrdl1: {
+    cycle: 5, props: () => P.floor(), over: sk => P.dbell(sk.handL),
+    frames: [
+      { hip: [118, 97], t: [-90, -90], n: -90, aR: { a: 92, b: 90 }, aL: { a: 90, b: 88 }, lR: { a: 92, b: 89 }, lL: { a: 97, b: 100, f: 20 } },
+      { hip: [115, 99], t: [-8, -6], n: -6, aR: { a: 88, b: 86 }, aL: { a: 86, b: 84 }, lR: { a: 84, b: 94 }, lL: { a: 173, b: 173, f: 85 } },
+    ],
+  },
+  dbrow1: {
+    // Free hand on the bench, feet staggered, back flat; the near arm rows.
+    cycle: 4, props: () => P.bench() + P.floor(), over: sk => P.dbell(sk.handR),
+    frames: [
+      { hip: [104, 110], t: [-14, -14], n: -10, aR: { a: 90, b: 90 }, aL: { to: [180, 140] }, lR: { to: [124, 180], bend: -1 }, lL: { to: [80, 180], bend: -1 } },
+      { hip: [104, 110], t: [-16, -16], n: -12, aR: { a: 196, b: 92 }, aL: { to: [180, 140] }, lR: { to: [124, 180], bend: -1 }, lL: { to: [80, 180], bend: -1 } },
+    ],
+  },
+  dbpress1: {
+    cycle: 4, props: () => P.floor(), over: sk => P.dbell(sk.handR),
+    frames: [
+      { view: 'front', hip: [120, 96], t: [-90, -90], n: -90, aR: { to: [93, 42], bend: -1 }, aL: { to: [137, 92], bend: 1 }, lR: { a: 94, b: 90 }, lL: { a: 86, b: 90 } },
+      { view: 'front', hip: [120, 96], t: [-90, -90], n: -90, aR: { to: [99, -6], bend: -1 }, aL: { to: [137, 92], bend: 1 }, lR: { a: 94, b: 90 }, lL: { a: 86, b: 90 } },
     ],
   },
   // No equipment (travel)
@@ -1186,7 +1227,8 @@ const M = {
   multri: { g: 'multi', code: 'Multi 1', name: 'Triceps pushdown (rope)', de: 'Kabelzugstation', url: 'multi1_kabelzugstation', fi: 'mul1', photo: 'mulrow', cues: ['Rope on the top pulley', 'Elbows pinned to your sides', 'Push down until the arms are straight, spread the rope at the bottom'] },
   bosu: { g: 'multi', code: 'Bosu', name: 'Bosu squat', q: 'bosu ball squat upside down dumbbell', range: [12, 15], sets: 2, start: 10, fig: 'bosusquat', cues: ['Bosu flat side up', 'Dumbbell at your chest, knees track over the toes', 'Lower slowly, rise under control'] },
   // Home: loose bands (light, medium, strong; no handles, no anchor), floor, ceiling bar with narrow, medium and wide grips.
-  // load: 'band' = always a band, 'bwband' = bodyweight, a band makes it harder, 'bw' = bodyweight only. per: reps count per leg/side.
+  // load: 'band' = always a band, 'bwband' = bodyweight, a band makes it harder, 'bw' = bodyweight only,
+  // 'db' = adjustable dumbbells, logged in kg per dumbbell (step 1 kg). per: reps count per leg/side/arm.
   hsquat: { g: 'beine', code: 'Band', name: 'Band squat', home: true, load: 'band', fig: 'hsquat', q: 'resistance band squat', range: [12, 20], cues: ['Stand on the middle of the band, feet shoulder-width', 'Wrap the ends around your hands, hands at your shoulders', 'Sit back and down, knees over the toes', 'Stand up fully and squeeze your glutes'] },
   split: { g: 'beine', code: 'Floor', name: 'Bulgarian split squat', home: true, load: 'bwband', per: 'leg', fig: 'split', q: 'bulgarian split squat form', range: [8, 12], cues: ['Rear foot on the sofa or a chair', 'Front knee over the toes, torso slightly forward', 'Lower until the back knee nearly touches the floor', 'Harder: front foot on the middle of the band, hold the ends'] },
   rdl1: { g: 'beine', code: 'Floor', name: 'Single-leg Romanian deadlift', home: true, load: 'bwband', per: 'leg', fig: 'rdl1', q: 'single leg romanian deadlift', range: [8, 12], cues: ['Soft knee on the standing leg', 'Hinge at the hip, back long, the free leg goes back', 'Feel the stretch in the back of the thigh', 'Harder: standing foot on the band, hold the ends'] },
@@ -1209,6 +1251,11 @@ const M = {
   ytraise: { g: 'ruecken', code: 'Floor', name: 'Lying Y-raise', home: true, load: 'bw', fig: 'ytraise', q: 'prone y raise', range: [10, 15], up: 'Last time 15 in every set: hold every rep 2 s at the top today.', cues: ['Face down, arms overhead in a Y, thumbs up', 'Lift arms and chest a little, shoulder blades down and back', 'Look at the floor, neck long', 'Lower slowly'] },
   legraise: { g: 'bauch', code: 'Floor', name: 'Lying leg raise', home: true, load: 'bw', fig: 'legraise', q: 'lying leg raise form', range: [8, 15], up: 'Last time 15 in every set: lower in 3 s today.', cues: ['On your back, hands flat next to your hips', 'Press your lower back into the floor', 'Raise straight legs to vertical, lower slowly without touching the floor'] },
   htri: { g: 'arme', code: 'Band', name: 'Band overhead triceps extension', home: true, load: 'band', fig: 'htri', q: 'resistance band overhead tricep extension', range: [12, 15], cues: ['Split stance, the back foot stands on one end', 'Both hands hold the other end behind your head, elbows up', 'Straighten your arms overhead, lower slowly', 'Elbows stay close to your head'] },
+  dbgoblet: { g: 'beine', code: 'Dumbbell', name: 'Goblet squat', home: true, load: 'db', step: 1, fig: 'dbgoblet', q: 'dumbbell goblet squat form', range: [8, 12], cues: ['Hold one dumbbell upright at your chest, both hands under the top end', 'Feet shoulder-width, toes slightly out', 'Sit down between your heels, chest up, elbows inside the knees', 'Push the floor away and stand up fully'] },
+  dbsplit: { g: 'beine', code: 'Dumbbells', name: 'Bulgarian split squat, dumbbells', home: true, load: 'db', step: 1, per: 'leg', fig: 'dbsplit', q: 'dumbbell bulgarian split squat form', range: [8, 12], cues: ['Rear foot on the sofa or a chair', 'A dumbbell in each hand, arms hanging', 'Lower straight down until the front thigh is level', 'Push up through the front heel'] },
+  dbrdl1: { g: 'beine', code: 'Dumbbell', name: 'Single-leg Romanian deadlift, dumbbell', home: true, load: 'db', step: 1, per: 'leg', fig: 'dbrdl1', q: 'single leg romanian deadlift dumbbell', range: [8, 12], cues: ['Dumbbell in the hand opposite the standing leg', 'Soft knee on the standing leg, back flat', 'Hinge at the hip, the free leg goes back in line with your body', 'Dumbbell close to the shin, stand up by squeezing your glute'] },
+  dbrow1: { g: 'ruecken', code: 'Dumbbell', name: 'One-arm dumbbell row', home: true, load: 'db', step: 1, per: 'arm', fig: 'dbrow1', q: 'one arm dumbbell row form', range: [8, 12], cues: ['Free hand on the sofa or a chair, feet staggered, back flat', 'Working arm hangs straight down under the shoulder', 'Pull the elbow back to your hip, squeeze the shoulder blade', 'Lower slowly, don’t twist', 'Left side first: the right does the same reps, no more'] },
+  dbpress1: { g: 'schulter', code: 'Dumbbell', name: 'One-arm dumbbell press', home: true, load: 'db', step: 1, per: 'arm', fig: 'dbpress1', q: 'standing one arm dumbbell shoulder press', range: [8, 12], cues: ['Stand tall, glutes and abs tight', 'Dumbbell at the shoulder, palm facing in', 'Press straight up without leaning to the side, lower slowly', 'Left side first: the right does the same reps, no more'] },
 };
 // Legs get one extra machine per plan and the calf raise as the extra (Vicoach 2026-11: arms above the norm, legs behind).
 // Dual machines and two-handed band moves end the set when the left side does (Vicoach 2026-11-18: arm R 2.2 kg, L 1.9 kg).
@@ -1225,19 +1272,22 @@ const CARDIO = {
   cross: { name: 'Cross-trainer', full: 'Cross-trainer (elliptical)', why: 'Smooth and easy on the joints.', cues: ['Upright, weight on the heels', 'Push and pull the handles lightly', 'Steady pace, no bouncing'] },
 };
 const CARDIO_CYCLE = ['amt', 'row', 'amt', 'cross'];
+// Dumbbells since 2026-11-21: loaded legs, and one-arm row/press so the left arm sets the reps (Vicoach 2026-11-18).
 const HOME = {
-  A: { pairs: [['hsquat', 'puwide'], ['pushup', 'hrow'], ['bridge', 'kneeraise']] },
-  B: { pairs: [['split', 'punar'], ['hpress', 'pullapart'], ['rdl1', 'deadbug']] },
+  A: { pairs: [['dbgoblet', 'puwide'], ['pushup', 'dbrow1'], ['bridge', 'kneeraise']] },
+  B: { pairs: [['dbsplit', 'punar'], ['dbpress1', 'pullapart'], ['dbrdl1', 'deadbug']] },
 };
 // Home extra = the other plan's leg pair (legs lag behind, arms are above the norm: Vicoach 2026-11).
-const HEXTRA = { A: ['split', 'rdl1'], B: ['hsquat', 'bridge'] };
+const HEXTRA = { A: ['dbsplit', 'dbrdl1'], B: ['dbgoblet', 'bridge'] };
 // Travel mode (no equipment): each exercise that needs a band or the bar gets a stand-in.
-const KIT_NONE = { hsquat: 'bwsquat', puwide: 'doorrow', pumed: 'doorrow', punar: 'doorrow', hrow: 'ytraise', pullapart: 'ytraise', pulldown: 'ytraise', hpress: 'pike', kneeraise: 'legraise', hcurl: 'doorrow', htri: 'pike' };
+const KIT_NONE = { hsquat: 'bwsquat', puwide: 'doorrow', pumed: 'doorrow', punar: 'doorrow', hrow: 'ytraise', pullapart: 'ytraise', pulldown: 'ytraise', hpress: 'pike', kneeraise: 'legraise', hcurl: 'doorrow', htri: 'pike',
+  dbgoblet: 'bwsquat', dbsplit: 'split', dbrdl1: 'rdl1', dbrow1: 'doorrow', dbpress1: 'pike' };
 const kitEx = (id, kit) => kit === 'none' && KIT_NONE[id] || id;
 const ALT = { bei3a: ['bei3d'], bei3d: ['bei3a'], rue4b: ['latkabel'], bru2b: ['bru1a', 'bru5'], rue1f: ['mulrow'], bau4a: ['bau4b', 'bau2'],
   bru6: ['latkabel'], bru4b: ['sch1b', 'bru3b'], rue3: ['mulface'], bau6: ['bau4b', 'bau2'], a3a: ['multri'],
   hsquat: ['split'], split: ['hsquat'], rdl1: ['bridge'], bridge: ['rdl1'], puwide: ['pumed', 'punar'], punar: ['pumed', 'puwide'],
-  hrow: ['pulldown'], pullapart: ['pulldown'], bwsquat: ['split'], doorrow: ['ytraise'], ytraise: ['doorrow'], legraise: ['deadbug'], pike: ['pushup'], hpress: ['pike'], kneeraise: ['deadbug'], deadbug: ['kneeraise'] };
+  hrow: ['pulldown'], pullapart: ['pulldown'], bwsquat: ['split'], doorrow: ['ytraise'], ytraise: ['doorrow'], legraise: ['deadbug'], pike: ['pushup'], hpress: ['pike'], kneeraise: ['deadbug'], deadbug: ['kneeraise'],
+  dbgoblet: ['hsquat', 'dbsplit'], dbsplit: ['split', 'dbgoblet'], dbrdl1: ['rdl1', 'bridge'], dbrow1: ['hrow', 'pulldown'], dbpress1: ['hpress', 'pike'] };
 const BANDS = { L: 'Light', M: 'Medium', S: 'Strong', SL: 'Strong + light', SM: 'Strong + medium' };
 const BAND_KEYS = Object.keys(BANDS);
 const topBand = sets => sets.reduce((b, x) => x.band && BAND_KEYS.indexOf(x.band) > BAND_KEYS.indexOf(b) ? x.band : b, null);
@@ -1252,6 +1302,7 @@ const extrasOf = (place, plan) => place === 'home' ? HEXTRA[plan] || HEXTRA.A : 
 const planName = s => (s.place === 'home' ? 'Home ' : 'Plan ') + s.plan;
 const rangeOf = id => M[id].range || [8, 12];
 const setsOf = id => M[id].sets || 3;
+const usesKg = m => !m.home || m.load === 'db'; // gym machines and home dumbbells are logged in kg
 const stepOf = id => M[id].step || 5; // FitInn weight stacks go in 5 kg plates
 // One step up or down, landing on a full step (47.5 → 50, not 52.5).
 const stepKg = (kg, id, dir) => { const st = stepOf(id), q = (kg || 0) / st; return Math.max(0, Math.round((dir > 0 ? Math.floor(q + 1e-9) + 1 : Math.ceil(q - 1e-9) - 1) * st * 10) / 10); };
@@ -1990,7 +2041,7 @@ function slotDefault(S, slot) {
 function mrow(id, extra = '') {
   const m = M[id], l = lastFor(id);
   let last = 'new';
-  if (l && !m.home) last = kgFmt(Math.max(...l.sets.map(x => x.kg)));
+  if (l && usesKg(m)) last = kgFmt(Math.max(...l.sets.map(x => x.kg ?? 0)));
   else if (l) last = topBand(l.sets) ? BANDS[topBand(l.sets)] + ' band' : `best ${Math.max(...l.sets.map(x => x.reps))}`;
   const lead = m.fig && m.home ? `<span class="mini">${figSVG(m.fig, 1, false)}</span>` : `<span class="dot" style="--gc:${G[m.g].c}"></span>`;
   return `<div class="mrow">${lead}<span>${h(m.name)}${extra}</span><span class="kg">${last}</span></div>`;
@@ -2041,7 +2092,9 @@ function renderGym() {
     '3 sets each, alternate the pair, 45 s rest in between.',
     'Band exercises: hit the top of the range in every set, then take the next band: light → medium → strong → strong + light → strong + medium (hold both bands together as one).',
     'Still too easy: grip the band shorter, wrap more of it around your hands.',
-    'Push-ups, split squats, single-leg deadlifts: at the top of the range, add a band.',
+    'Dumbbells: hit the top of the range in every set, then add 1 kg per dumbbell next time.',
+    'One-arm row and press: left arm first, the right does the same reps, no more.',
+    'Push-ups: at the top of the range, add a band.',
     'Pull-ups: stop 1–2 reps before you fail. 8 in every set → lower slowly (3 s).',
   ] : [
     '3 sets of 8–12 reps on one machine, then the next; abs and lower back 12–15.',
@@ -2065,7 +2118,7 @@ function renderGym() {
         <div>
           <div class="eyebrow">${resumable ? 'In progress' : home ? 'Next home workout' : 'Next workout'}</div>
           <h2 class="h2">${home ? 'Home' : 'Plan'} ${plan}</h2>
-          <div class="sub">${bare ? 'Full body · no equipment · about 30 min' : home ? 'Full body · bands, floor, bar · about 30 min' : 'Full body · one machine at a time · about 45 min'}</div>
+          <div class="sub">${bare ? 'Full body · no equipment · about 30 min' : home ? 'Full body · dumbbells, bands, bar · about 30 min' : 'Full body · one machine at a time · about 45 min'}</div>
         </div>
         ${resumable ? '' : `<div class="seg" role="group" aria-label="Plan">${['A', 'B'].map(x => `<button data-plan="${x}" aria-pressed="${x === plan}">${x}</button>`).join('')}</div>`}
       </div>
@@ -2292,13 +2345,13 @@ const SS = {
     const today = S.sets.filter(x => x.ex === exId);
     // In the grid the set number is simply how many sets this machine has today, plus one.
     const setNo = grid ? today.length + 1 : st.set, key = grid ? today.length : S.step;
-    const sg = m.home ? this.suggestHome(exId, setNo) : this.suggest(exId, setNo);
+    const sg = usesKg(m) ? this.suggest(exId, setNo) : this.suggestHome(exId, setNo);
     if (!this.draft || this.draft.step !== key || this.draft.ex !== exId) this.draft = { step: key, ex: exId, kg: sg.kg, reps: sg.reps, band: sg.band };
     const def = grid ? exId : slotDefault(S, st.slot), alts = [def, ...(ALT[def] || [])].filter(a => S.kit !== 'none' || !KIT_NONE[a]);
     const cues = S.kit === 'none' ? m.cues.filter(c => !/\bband\b/i.test(c)) : m.cues;
     const bandKeys = m.load === 'bwband' ? ['0', ...BAND_KEYS] : BAND_KEYS;
-    const load = !m.home
-      ? `<div class="stepper"><label for="in-kg">Weight</label>
+    const load = usesKg(m)
+      ? `<div class="stepper"><label for="in-kg">${m.load === 'db' ? 'kg / dumbbell' : 'Weight'}</label>
             <button data-act="kg-" aria-label="Less weight">−</button>
             <input id="in-kg" type="number" inputmode="decimal" step="0.5" min="0" value="${h(this.draft.kg)}" placeholder="kg" aria-label="Weight in kg">
             <button data-act="kg+" aria-label="More weight">+</button></div>`
@@ -2392,10 +2445,10 @@ const SS = {
   saveSet() {
     if (this.grid) return this.saveSetGrid();
     const S = this.S, st = this.sched[S.step], exId = this.exFor(st.slot), m = M[exId], d = this.readDraft();
-    if (!m.home && d.kg == null) return toast('Please enter a weight (0 for bodyweight).');
+    if (usesKg(m) && d.kg == null) return toast('Please enter a weight (0 for bodyweight).');
     if (!d.reps) return toast('Please enter your reps.');
     if (m.load === 'band' && !this.draft.band) return toast('Please pick a band.');
-    const load = !m.home ? { kg: d.kg } : this.draft.band && m.load !== 'bw' ? { band: this.draft.band } : {};
+    const load = usesKg(m) ? { kg: d.kg } : this.draft.band && m.load !== 'bw' ? { band: this.draft.band } : {};
     S.sets.push({ ex: exId, ...load, reps: d.reps, at: new Date().toISOString(), slot: st.slot, set: st.set });
     this.saveRemote();
     const j = this.nextIdx(S.step), nx = this.sched[j];
@@ -3022,7 +3075,7 @@ function renderStats() {
   const exRows = [];
   const multiple = (ex, gym) => {
     const m = M[ex], list = Object.values(byEx[ex]).sort((a, b) => a.k.localeCompare(b.k));
-    const kind = gym ? 'kg' : m.load === 'bw' ? 'reps' : 'band';
+    const kind = gym || m.load === 'db' ? 'kg' : m.load === 'bw' ? 'reps' : 'band';
     const val = l => kind === 'kg' ? Math.max(...l.sets.map(x => x.kg ?? 0)) : kind === 'reps' ? Math.max(...l.sets.map(x => x.reps)) : bandLevel(l.sets);
     const show = v => kind === 'kg' ? kgFmt(v) : kind === 'reps' ? plural(v, 'rep', 'reps') : v ? BANDS[BAND_KEYS[v - 1]] + ' band' : 'Bodyweight';
     const pts = list.map(l => ({ k: l.k, v: val(l), title: fmtDate(l.k), rows: [{ v: show(val(l)), l: kind === 'kg' ? 'top set · ' + setsText(l.sets) : kind === 'reps' ? 'best set' : 'top band · ' + l.sets.map(x => x.reps).join(' / ') + ' reps', c: 'var(--viz-1)' }] }));
@@ -3085,7 +3138,7 @@ function testSample() {
     const pl = home ? 'home' : 'gym', p = plansOf(pl)[plan], sets = [];
     for (const pr of p.pairs) for (const ex of pr) for (let s = 1; s <= 3; s++) {
       const m = M[ex], r = rangeOf(ex);
-      if (!m.home) { kg[ex] = kg[ex] ?? (m.start || 20 + Math.round(rnd() * 4) * 5); sets.push({ ex, kg: kg[ex], reps: r[0] + Math.floor(rnd() * (r[1] - r[0] + 1)), at: k + 'T18:00:00.000Z' }); }
+      if (usesKg(m)) { kg[ex] = kg[ex] ?? (m.start || (m.home ? 6 + Math.round(rnd() * 6) : 20 + Math.round(rnd() * 4) * 5)); sets.push({ ex, kg: kg[ex], reps: r[0] + Math.floor(rnd() * (r[1] - r[0] + 1)), at: k + 'T18:00:00.000Z' }); }
       else sets.push({ ex, ...(m.load === 'bw' ? {} : { band: BAND_KEYS[Math.min(4, Math.floor(n / 6))] }), reps: r[0] + Math.floor(rnd() * (r[1] - r[0] + 1)), at: k + 'T18:00:00.000Z' });
     }
     for (const ex of Object.keys(kg)) if (rnd() < 0.3) kg[ex] += stepOf(ex);
