@@ -1228,7 +1228,9 @@ const M = {
   bosu: { g: 'multi', code: 'Bosu', name: 'Bosu squat', q: 'bosu ball squat upside down dumbbell', range: [12, 15], sets: 2, start: 10, fig: 'bosusquat', cues: ['Bosu flat side up', 'Dumbbell at your chest, knees track over the toes', 'Lower slowly, rise under control'] },
   // Home: loose bands (light, medium, strong; no handles, no anchor), floor, ceiling bar with narrow, medium and wide grips.
   // load: 'band' = always a band, 'bwband' = bodyweight, a band makes it harder, 'bw' = bodyweight only,
-  // 'db' = adjustable dumbbells, logged in kg per dumbbell (step 1 kg). per: reps count per leg/side/arm.
+  // 'db' = adjustable dumbbells, logged as plate kg per dumbbell (bar = 0). Plates: 4 × 2 kg + 4 × 1 kg, always in pairs,
+  // so 2 kg steps; max 12 kg on one dumbbell, 6 kg each when both are used. At max, `up` makes it harder instead.
+  // per: reps count per leg/side/arm.
   hsquat: { g: 'beine', code: 'Band', name: 'Band squat', home: true, load: 'band', fig: 'hsquat', q: 'resistance band squat', range: [12, 20], cues: ['Stand on the middle of the band, feet shoulder-width', 'Wrap the ends around your hands, hands at your shoulders', 'Sit back and down, knees over the toes', 'Stand up fully and squeeze your glutes'] },
   split: { g: 'beine', code: 'Floor', name: 'Bulgarian split squat', home: true, load: 'bwband', per: 'leg', fig: 'split', q: 'bulgarian split squat form', range: [8, 12], cues: ['Rear foot on the sofa or a chair', 'Front knee over the toes, torso slightly forward', 'Lower until the back knee nearly touches the floor', 'Harder: front foot on the middle of the band, hold the ends'] },
   rdl1: { g: 'beine', code: 'Floor', name: 'Single-leg Romanian deadlift', home: true, load: 'bwband', per: 'leg', fig: 'rdl1', q: 'single leg romanian deadlift', range: [8, 12], cues: ['Soft knee on the standing leg', 'Hinge at the hip, back long, the free leg goes back', 'Feel the stretch in the back of the thigh', 'Harder: standing foot on the band, hold the ends'] },
@@ -1251,11 +1253,11 @@ const M = {
   ytraise: { g: 'ruecken', code: 'Floor', name: 'Lying Y-raise', home: true, load: 'bw', fig: 'ytraise', q: 'prone y raise', range: [10, 15], up: 'Last time 15 in every set: hold every rep 2 s at the top today.', cues: ['Face down, arms overhead in a Y, thumbs up', 'Lift arms and chest a little, shoulder blades down and back', 'Look at the floor, neck long', 'Lower slowly'] },
   legraise: { g: 'bauch', code: 'Floor', name: 'Lying leg raise', home: true, load: 'bw', fig: 'legraise', q: 'lying leg raise form', range: [8, 15], up: 'Last time 15 in every set: lower in 3 s today.', cues: ['On your back, hands flat next to your hips', 'Press your lower back into the floor', 'Raise straight legs to vertical, lower slowly without touching the floor'] },
   htri: { g: 'arme', code: 'Band', name: 'Band overhead triceps extension', home: true, load: 'band', fig: 'htri', q: 'resistance band overhead tricep extension', range: [12, 15], cues: ['Split stance, the back foot stands on one end', 'Both hands hold the other end behind your head, elbows up', 'Straighten your arms overhead, lower slowly', 'Elbows stay close to your head'] },
-  dbgoblet: { g: 'beine', code: 'Dumbbell', name: 'Goblet squat', home: true, load: 'db', step: 1, fig: 'dbgoblet', q: 'dumbbell goblet squat form', range: [8, 12], cues: ['Hold one dumbbell upright at your chest, both hands under the top end', 'Feet shoulder-width, toes slightly out', 'Sit down between your heels, chest up, elbows inside the knees', 'Push the floor away and stand up fully'] },
-  dbsplit: { g: 'beine', code: 'Dumbbells', name: 'Bulgarian split squat, dumbbells', home: true, load: 'db', step: 1, per: 'leg', fig: 'dbsplit', q: 'dumbbell bulgarian split squat form', range: [8, 12], cues: ['Rear foot on the sofa or a chair', 'A dumbbell in each hand, arms hanging', 'Lower straight down until the front thigh is level', 'Push up through the front heel'] },
-  dbrdl1: { g: 'beine', code: 'Dumbbell', name: 'Single-leg Romanian deadlift, dumbbell', home: true, load: 'db', step: 1, per: 'leg', fig: 'dbrdl1', q: 'single leg romanian deadlift dumbbell', range: [8, 12], cues: ['Dumbbell in the hand opposite the standing leg', 'Soft knee on the standing leg, back flat', 'Hinge at the hip, the free leg goes back in line with your body', 'Dumbbell close to the shin, stand up by squeezing your glute'] },
-  dbrow1: { g: 'ruecken', code: 'Dumbbell', name: 'One-arm dumbbell row', home: true, load: 'db', step: 1, per: 'arm', fig: 'dbrow1', q: 'one arm dumbbell row form', range: [8, 12], cues: ['Free hand on the sofa or a chair, feet staggered, back flat', 'Working arm hangs straight down under the shoulder', 'Pull the elbow back to your hip, squeeze the shoulder blade', 'Lower slowly, don’t twist', 'Left side first: the right does the same reps, no more'] },
-  dbpress1: { g: 'schulter', code: 'Dumbbell', name: 'One-arm dumbbell press', home: true, load: 'db', step: 1, per: 'arm', fig: 'dbpress1', q: 'standing one arm dumbbell shoulder press', range: [8, 12], cues: ['Stand tall, glutes and abs tight', 'Dumbbell at the shoulder, palm facing in', 'Press straight up without leaning to the side, lower slowly', 'Left side first: the right does the same reps, no more'] },
+  dbgoblet: { g: 'beine', code: 'Dumbbell', name: 'Goblet squat', home: true, load: 'db', step: 2, max: 12, fig: 'dbgoblet', q: 'dumbbell goblet squat form', range: [10, 15], up: 'Dumbbell is full: lower in 3 s and pause 2 s at the bottom on every rep today.', cues: ['Hold one dumbbell upright at your chest, both hands under the top end', 'Feet shoulder-width, toes slightly out', 'Sit down between your heels, chest up, elbows inside the knees', 'Push the floor away and stand up fully'] },
+  dbsplit: { g: 'beine', code: 'Dumbbells', name: 'Bulgarian split squat, dumbbells', home: true, load: 'db', step: 2, max: 6, per: 'leg', up: 'Both dumbbells are full: lower in 3 s and pause 1 s at the bottom on every rep today.', fig: 'dbsplit', q: 'dumbbell bulgarian split squat form', range: [8, 12], cues: ['Rear foot on the sofa or a chair', 'A dumbbell in each hand, arms hanging', 'Lower straight down until the front thigh is level', 'Push up through the front heel'] },
+  dbrdl1: { g: 'beine', code: 'Dumbbell', name: 'Single-leg Romanian deadlift, dumbbell', home: true, load: 'db', step: 2, max: 12, per: 'leg', up: 'Dumbbell is full: hold 2 s at the bottom on every rep today.', fig: 'dbrdl1', q: 'single leg romanian deadlift dumbbell', range: [8, 12], cues: ['Dumbbell in the hand opposite the standing leg', 'Soft knee on the standing leg, back flat', 'Hinge at the hip, the free leg goes back in line with your body', 'Dumbbell close to the shin, stand up by squeezing your glute'] },
+  dbrow1: { g: 'ruecken', code: 'Dumbbell', name: 'One-arm dumbbell row', home: true, load: 'db', step: 2, max: 12, per: 'arm', fig: 'dbrow1', q: 'one arm dumbbell row form', range: [10, 15], up: 'Dumbbell is full: pause 2 s at the top on every rep today.', cues: ['Free hand on the sofa or a chair, feet staggered, back flat', 'Working arm hangs straight down under the shoulder', 'Pull the elbow back to your hip, squeeze the shoulder blade', 'Lower slowly, don’t twist', 'Left side first: the right does the same reps, no more'] },
+  dbpress1: { g: 'schulter', code: 'Dumbbell', name: 'One-arm dumbbell press', home: true, load: 'db', step: 2, max: 12, per: 'arm', up: 'Dumbbell is full: lower in 3 s on every rep today.', fig: 'dbpress1', q: 'standing one arm dumbbell shoulder press', range: [8, 12], cues: ['Stand tall, glutes and abs tight', 'Dumbbell at the shoulder, palm facing in', 'Press straight up without leaning to the side, lower slowly', 'Left side first: the right does the same reps, no more'] },
 };
 // Legs get one extra machine per plan and the calf raise as the extra (Vicoach 2026-11: arms above the norm, legs behind).
 // Dual machines and two-handed band moves end the set when the left side does (Vicoach 2026-11-18: arm R 2.2 kg, L 1.9 kg).
@@ -2092,7 +2094,7 @@ function renderGym() {
     '3 sets each, alternate the pair, 45 s rest in between.',
     'Band exercises: hit the top of the range in every set, then take the next band: light → medium → strong → strong + light → strong + medium (hold both bands together as one).',
     'Still too easy: grip the band shorter, wrap more of it around your hands.',
-    'Dumbbells: hit the top of the range in every set, then add 1 kg per dumbbell next time.',
+    'Dumbbells: log only the plates on one dumbbell (bar alone = 0). Top of the range in every set → one more pair of 1 kg plates (+2 kg). Max 12 kg on one dumbbell, 6 kg each with two; after that the app makes the reps slower instead.',
     'One-arm row and press: left arm first, the right does the same reps, no more.',
     'Push-ups: at the top of the range, add a band.',
     'Pull-ups: stop 1–2 reps before you fail. 8 in every set → lower slowly (3 s).',
@@ -2304,7 +2306,8 @@ const SS = {
       const all = s.length >= n && s.every(x => x.reps >= r[1]);
       if (all) {
         kg = stepKg(kg, exId, 1); reps = r[0]; tone = 'up';
-        hint = exId === 'bosu' ? `Last time 2 × ${r[1]}: today ${kgFmt(kg)}, or lower for 3 s.` : `Last time you hit ${r[1]} in every set: today ${kgFmt(kg)}.`;
+        if (m.max != null && kg > m.max) { kg = m.max; reps = r[1]; hint = m.up || `Heaviest setup: lower slowly (3 s) on every rep today.`; }
+        else hint = exId === 'bosu' ? `Last time 2 × ${r[1]}: today ${kgFmt(kg)}, or lower for 3 s.` : `Last time you hit ${r[1]} in every set: today ${kgFmt(kg)}.`;
       } else { reps = s[Math.min(setNo - 1, s.length - 1)].reps; hint = `Same weight. Goal: ${r[1]} reps in every set.`; }
     } else {
       kg = m.start ?? ''; reps = r[1];
@@ -2351,7 +2354,7 @@ const SS = {
     const cues = S.kit === 'none' ? m.cues.filter(c => !/\bband\b/i.test(c)) : m.cues;
     const bandKeys = m.load === 'bwband' ? ['0', ...BAND_KEYS] : BAND_KEYS;
     const load = usesKg(m)
-      ? `<div class="stepper"><label for="in-kg">${m.load === 'db' ? 'kg / dumbbell' : 'Weight'}</label>
+      ? `<div class="stepper"><label for="in-kg">${m.load === 'db' ? 'Plates (kg)' : 'Weight'}</label>
             <button data-act="kg-" aria-label="Less weight">−</button>
             <input id="in-kg" type="number" inputmode="decimal" step="0.5" min="0" value="${h(this.draft.kg)}" placeholder="kg" aria-label="Weight in kg">
             <button data-act="kg+" aria-label="More weight">+</button></div>`
@@ -2439,7 +2442,7 @@ const SS = {
     // In the gym grid there is no step schedule: the machine is S.cur.
     const S = this.S, exId = this.grid ? S.cur : this.exFor(this.sched[S.step].slot);
     const d = this.readDraft();
-    if (field === 'kg') { const v = stepKg(d.kg, exId, dir); $('#in-kg').value = v; if (this.draft) this.draft.kg = v; }
+    if (field === 'kg') { const mx = M[exId].max, v = Math.min(stepKg(d.kg, exId, dir), mx ?? Infinity); $('#in-kg').value = v; if (this.draft) this.draft.kg = v; }
     else { const v = Math.max(0, (d.reps ?? rangeOf(exId)[1]) + dir); $('#in-reps').value = v; if (this.draft) this.draft.reps = v; }
   },
   saveSet() {
